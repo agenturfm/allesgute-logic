@@ -4,6 +4,9 @@
 html
 html-n
 
+# Auto-generated directory/files; not need to git them
+src/assets/workers
+
 # compiled output
 /dist
 /tmp
