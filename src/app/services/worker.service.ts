@@ -7,7 +7,7 @@ import { Injectable, isDevMode } from '@angular/core';
 import { InputMessage, OutputMessage } from '../../worker/shared/message.class';
 import { Observable, Subscriber } from 'rxjs';
 
-const WORKER_PATH = 'assets/workers/main.js';
+const WORKER_PATH = 'assets/workers/worker.main.js';
 
 @Injectable( {
     providedIn: 'root'

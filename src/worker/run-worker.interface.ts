@@ -1,5 +1,5 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
 import { InputMessage, OutputMessage } from './shared/message.class';

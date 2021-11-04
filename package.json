@@ -3,12 +3,15 @@
     "version": "0.1.0",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve",
-        "build": "ng build",
-        "watch": "ng build --watch --configuration development",
+        "start": "run-p build-dev-worker serve",
+        "start-prod": "run-p build-prod-worker serve-prod",
+        "build": "ng build --configuration development",
+        "build-prod": "ng build --configuration production",
+        "serve": "ng serve -c development",
+        "serve-prod": "ng serve -c production",
         "test": "ng test",
-        "build-worker": "ng run allesgute:build-worker",
-        "dev-worker": "ng run allesgute:dev-worker"
+        "build-prod-worker": "ng run allesgute:build-worker",
+        "build-dev-worker": "ng run allesgute:dev-worker"
     },
     "private": true,
     "dependencies": {
@@ -49,7 +52,10 @@
         "karma-coverage": "~2.0.3",
         "karma-jasmine": "~4.0.0",
         "karma-jasmine-html-reporter": "~1.7.0",
+        "npm-run-all": "~4.1.5",
         "typescript": "~4.3.5",
-        "webpack": "~5.61.0"
+        "wait-on": "~6.0.0",
+        "webpack": "~5.61.0",
+        "webpack-merge": "~5.8.0"
     }
 }

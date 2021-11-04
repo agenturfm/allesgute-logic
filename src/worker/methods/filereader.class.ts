@@ -1,8 +1,7 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-/* tslint:disable:no-console */
 import { InputMessage, Methods, OutputMessage } from '../shared/message.class';
 import { Runner } from '../run-worker.interface';
 import { Observable } from 'rxjs';

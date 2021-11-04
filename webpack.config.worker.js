@@ -19,7 +19,7 @@ module.exports = {
         ]
     },
     'entry': {
-        './src/assets/workers/main': [
+        './src/assets/workers/worker.main': [
             './src/worker/main.worker.ts'
         ]
     },

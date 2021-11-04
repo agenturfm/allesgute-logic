@@ -1,13 +1,10 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-/* tslint:disable:variable-name */
 export enum Methods {
-
     FILE_READER_ARRAY_BUFFER,
     FILE_READER_DATA_URL
-
 }
 
 export abstract class Message< T > {
@@ -15,21 +12,15 @@ export abstract class Message< T > {
     public constructor ( private readonly _id: string, private readonly _method: Methods, private readonly _data: T ) {}
 
     public get id (): string {
-
         return this._id;
-
     }
 
     public get method (): Methods {
-
         return this._method;
-
     }
 
     public get data (): T {
-
         return this._data;
-
     }
 
     // Adaption of the work by "jcxplorer" (credits: https://gist.github.com/jcxplorer/823878)
@@ -43,14 +34,11 @@ export abstract class Message< T > {
             const random: number = Math.random() * 16 | 0;
 
             if ( i === 8 || i === 12 || i === 16 || i === 20 ) {
-
                 uuid += '-';
-
             }
 
             // tslint:disable-next-line:no-bitwise
             uuid += ( i === 12 ? 4 : ( i === 16 ? ( random & 3 | 8 ) : random ) ).toString( 16 );
-
         }
 
         return uuid;
@@ -62,9 +50,7 @@ export abstract class Message< T > {
 export class InputMessage< T > extends Message< T > {
 
     public static getInstance< T > ( method: Methods, data: T ): InputMessage< T > {
-
         return new InputMessage< T >( Message.generateUUIDv4(), method, data );
-
     }
 
     public static deserializeInstance ( input: any ): InputMessage< any >|undefined {
@@ -89,9 +75,7 @@ export class InputMessage< T > extends Message< T > {
 export class OutputMessage< T > extends Message< T > {
 
     public static getInstance< T, IN > ( input: InputMessage< IN >, data: T ): OutputMessage< T > {
-
         return new OutputMessage< T >( input.id, input.method, data );
-
     }
 
     public static deserializeInstance ( output: any ): OutputMessage< any >|undefined {
@@ -102,10 +86,8 @@ export class OutputMessage< T > extends Message< T > {
             output.hasOwnProperty( '_method' ) && typeof output._method === 'number' &&
             output.hasOwnProperty( '_data' )
         ) {
-
             // tslint:disable-next-line:no-string-literal
             return new OutputMessage< any >( output[ '_id' ], output[ '_method' ], output[ '_data' ] );
-
         }
 
         return undefined;
@@ -113,20 +95,3 @@ export class OutputMessage< T > extends Message< T > {
 
 }
 
-export class ImageLoaderInputMessage {
-
-    public constructor ( private readonly _width: number, private readonly _dataUrl: string ) {}
-
-    public get width (): number {
-
-        return this._width;
-
-    }
-
-    public get dataUrl (): string {
-
-        return this._dataUrl;
-
-    }
-
-}
