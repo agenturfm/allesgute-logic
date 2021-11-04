@@ -1,0 +1,45 @@
+//*************************************************************
+// RESPONSIVE BREAKPOINTS
+//*************************************************************
+$break_mobile : 480px;
+$break_tablet : 768px;
+$break_tablet_lg : 992px;
+$break_desktop_sm : 1200px;
+$break_desktop : 1300px;
+$break_desktop_lg : 1600px;
+
+@mixin mobile() { 
+    @media (min-width:#{$break_mobile}) {
+        @content;
+    }
+}
+
+@mixin tablet() { 
+    @media (min-width:#{$break_tablet}) {
+        @content;
+    }
+}
+
+@mixin tablet_lg() { 
+    @media (min-width:#{$break_tablet_lg}) {
+        @content;
+    }
+}
+
+@mixin desktop_sm() { 
+    @media (min-width:#{$break_desktop_sm}) {
+        @content;
+    }
+}
+
+@mixin desktop() { 
+    @media (min-width:#{$break_desktop}) {
+        @content;
+    }
+}
+
+@mixin desktop_lg() { 
+    @media (min-width:#{$break_desktop_lg}) {
+        @content;
+    }
+}
