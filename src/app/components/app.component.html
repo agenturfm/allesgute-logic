@@ -9,7 +9,7 @@
             <div class="col-lg-6">
                 <h1>Glückwünsche<br>für DEIN zuhause.</h1>
                 <p class="desc">Lade jetzt <b>bis zu 32 Bilder</b> hoch und verschenke eine Fotoleinwand in Kunstdruck-Qualität.</p>
-                <div class="desktop-btn">
+                <div class="desktop-btn" (click)="startConfig()">
                     <a class="btn has-icon cta-btn">
                         <div class="btn-wrapper">
                             <span>Jetzt Bilder hochladen</span><i class="icon icon-check-shield-white"></i>
@@ -58,7 +58,7 @@
                     </div>
                 </div>
             </div>
-            <div class="mobile-btn">
+            <div class="mobile-btn" (click)="startConfig()">
                 <a class="btn has-icon cta-btn">
                     <div class="btn-wrapper">
                         <span>Jetzt Bilder hochladen</span><i class="icon icon-check-shield-white"></i>
@@ -262,7 +262,7 @@
             </ul>
         </div>
     </div>
-    <div class="btn-container">
+    <div class="btn-container" (click)="startConfig()">
         <div class="">
             <a class="btn has-icon cta-btn">
                 <div class="btn-wrapper">

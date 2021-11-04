@@ -1,50 +1,40 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-/* tslint:disable:no-console variable-name */
 import { Design } from './design.abstract';
 import { UIImage } from './images.service';
 import Konva from 'konva';
 
 interface Tile {
-
     x : number;
     y : number;
     w : number;
     h : number;
-
 }
 
 interface TileQuadrant {
-
     a : Tile;
     b? : Tile;
     c? : Tile;
     d? : Tile;
-
 }
 
 export class MosaicDesign extends Design {
 
     public constructor ( images: Array<UIImage>, dimensions: Konva.Vector2d ) {
-
         super( images, dimensions );
-
     }
 
     protected computeTiles (): void {
 
         const length: number = this.images.length;
-
         const tiles: Array<Tile> = new Array<Tile>();
 
         this.computeQuadrants( length, length, { x: 0, y: 0, w: this.dimensions.x, h: this.dimensions.y }, tiles );
 
         if ( tiles.length !== length ) {
-
             console.error( 'Invalid tiles distribution, expected', length, 'got', tiles.length );
-
         }
 
         tiles.forEach( tile => this.addTile( this.convertTileToPolygon( tile ) ) );
@@ -58,21 +48,15 @@ export class MosaicDesign extends Design {
             tiles.push( addTile.a );
 
             if ( addTile.b ) {
-
                 tiles.push( addTile.b );
-
             }
 
             if ( addTile.c ) {
-
                 tiles.push( addTile.c );
-
             }
 
             if ( addTile.d ) {
-
                 tiles.push( addTile.d );
-
             }
 
         };
@@ -85,7 +69,6 @@ export class MosaicDesign extends Design {
         if ( nrTiles <= 4 ) {
 
             push_helper( newTiles );
-
             return;
 
         } else {
@@ -109,32 +92,24 @@ export class MosaicDesign extends Design {
             let tileCnt: number = tilesA;
 
             if ( nrTiles - ( tileCnt + varCeil ) < 2 ) {
-
                 // There would be too few tiles left for C, D ( need at least 2)
                 // Prevent tile B from selecting ceil
                 ceilB = false;
-
             } else {
-
                 // Else: tile B can make random decision
                 ceilB = randB > 0.5;
-
             }
 
             const tilesB: number = ceilB ? varCeil : varFloor;
             tileCnt += tilesB;
 
             if ( nrTiles - ( tileCnt + varCeil ) < 1 ) {
-
                 // There would be too few tiles left for D ( need at least 1)
                 // Prevent tile C from selecting ceil
                 ceilC = false;
-
             } else {
-
                 // Else: tile C can make random decision
                 ceilC = randC > 0.5;
-
             }
 
             const t3: number = ceilC ? varCeil : varFloor;
@@ -146,21 +121,15 @@ export class MosaicDesign extends Design {
             this.computeQuadrants( tilesA, totalTiles, newTiles.a, tiles );
 
             if ( tiles.length < totalTiles && !!newTiles.b ) {
-
                 this.computeQuadrants( tilesB, totalTiles, newTiles.b, tiles );
-
             }
 
             if ( tiles.length < totalTiles && !!newTiles.c ) {
-
                 this.computeQuadrants( t3, totalTiles, newTiles.c, tiles );
-
             }
 
             if ( tiles.length < totalTiles && !!newTiles.d ) {
-
                 this.computeQuadrants( t4, totalTiles, newTiles.d, tiles );
-
             }
 
             return;
@@ -177,10 +146,10 @@ export class MosaicDesign extends Design {
 
         const randDecision: number = Math.random();
 
-        // #6: Restrict min/max to tighter boundaries (45% - 55%)
+        // Restrict min/max to tighter boundaries (48% - 52%)
         //
-        const horizontal: number = ( Math.random() * 10 ) + 45;
-        const vertical: number = ( Math.random() * 10 ) + 45;
+        const horizontal: number = ( Math.random() * 4 ) + 48;
+        const vertical: number = ( Math.random() * 4 ) + 48;
 
         const left: number = width * ( horizontal / 100 );
         const top: number = height * ( vertical / 100 );
@@ -220,7 +189,8 @@ export class MosaicDesign extends Design {
              * |------------|
              */
 
-            return randDecision < 0.5 ?
+            // More likelihood for 'B'
+            return randDecision < 0.25 ?
                 /* A */
                 {
                     a: { x: offsetX, y: offsetY, w: left, h: top },
@@ -248,8 +218,8 @@ export class MosaicDesign extends Design {
              * |------------|
              */
 
-            // #6: Make decision for design 'B' above more likely
-            return randDecision < 0.25 ?
+            // More likelihood for 'A'
+            return randDecision < 0.75 ?
                 /* A */
                 {
                     a: { x: offsetX, y: offsetY, w: left, h: height },

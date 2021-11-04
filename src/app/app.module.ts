@@ -20,8 +20,7 @@ import { ImagesService } from './services/images.service';
         BrowserModule
     ],
     providers: [
-        { provide: 'uiImageWidthDesktop', useValue: 800 },
-        { provide: 'uiImageWidthMobil', useValue: 400 },
+        { provide: 'uiImageWidth', useValue: 800 },
         { provide: 'uiImageQuality', useValue: 0.7 },
         ImagesService
     ],

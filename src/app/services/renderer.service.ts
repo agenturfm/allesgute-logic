@@ -151,15 +151,7 @@ export class RendererService {
 */
 
     public setSize ( width, height ) {
-
         this.updateStageDimensions( width, height );
-
-    }
-
-    public get rendererDesign (): Design {
-
-        return this._activeRendererDesign;
-
     }
 
     public get rendererDesignType (): RendererDesignType {

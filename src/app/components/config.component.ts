@@ -1,8 +1,18 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, isDevMode, ViewChild } from '@angular/core';
+/*!
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
+ */
+
+import { AfterViewInit, Component, ElementRef, isDevMode, Renderer2, ViewChild } from '@angular/core';
 import { RendererService } from '../services/renderer.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../services/images.service';
+
+enum CanvasSize {
+    sm,
+    md,
+    lg
+}
 
 @Component({
     selector: 'app-config',
@@ -10,26 +20,44 @@ import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../servic
 })
 export class ConfigComponent implements AfterViewInit {
 
-    public totalCounter = 0;
-    public disableUploadbtn = false;
 
-    @ViewChild('konvacanvas') private _konvaCanvas: ElementRef;
-    @ViewChild('imageinput') private _imageInput: ElementRef;
+    @ViewChild('konvacanvas', { static: true }) private _konvaCanvas: ElementRef;
 
-    private _inputElem;
+    private _inputElem: HTMLInputElement;
+    private _totalCounter = 0;
+    private _canvasSize: CanvasSize = CanvasSize.sm;
 
     public constructor ( private _renderSvc: RendererService,
-                         private _imagesService: ImagesService) {
+                         private _imagesService: ImagesService,
+                         private _renderer: Renderer2 )
+    {
     }
 
     public ngAfterViewInit () : void {
         this._renderSvc.init( this._konvaCanvas.nativeElement );
-        this._inputElem = this._imageInput.nativeElement;
-        this._inputElem.addEventListener( 'change', () => this._addImage() );
+        setTimeout( () => this.addImage(), 100);
+    }
+
+    public get canvasSize () : CanvasSize {
+        return this._canvasSize;
+    }
+
+    public set canvasSize ( value : CanvasSize ) {
+        this._canvasSize = value;
+        this._renderSvc.setSize( this._konvaCanvas.nativeElement.offsetWidth, this._konvaCanvas.nativeElement.offsetHeight );
+    }
+
+    public get sizeClass (): string {
+        switch ( this.canvasSize ) {
+            case CanvasSize.sm: return 'small';
+            case CanvasSize.md: return 'medium';
+            case CanvasSize.lg: return 'large';
+        }
+        return '';
     }
 
     public get uploadBtnVisible (): boolean {
-        return this.totalCounter < this.maxImages;
+        return this._totalCounter < this.maxImages;
     }
 
     public get images (): Array<UIImage> {
@@ -48,7 +76,26 @@ export class ConfigComponent implements AfterViewInit {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
     }
 
+    public shuffleImages () {
+        this._renderSvc.shuffle();
+    }
+
     public addImage () {
+
+        // Note: does not work well if element is created within the view itself;
+        // Generates awkward behaviour if selecting same files twice;
+        // No clean element reset method found, so create it dynamically
+        this._inputElem = this._renderer.createElement( 'input' );
+
+        // Safari under iOS requires element to be within DOM
+        this._renderer.appendChild( this._konvaCanvas.nativeElement, this._inputElem );
+
+        this._inputElem.type = 'file';
+        this._inputElem.multiple = true;
+        this._inputElem.accept = 'image/*';
+        this._inputElem.style.display = 'none';
+        this._inputElem.addEventListener( 'change', () => this._addImage() );
+
         // Trigger file selection dialog
         this._inputElem.click();
     }
@@ -56,7 +103,7 @@ export class ConfigComponent implements AfterViewInit {
     public removeImage ( image: UIImage ) {
 
         this._imagesService.removeImage( image );
-        this.totalCounter -= 1;
+        this._totalCounter -= 1;
 
         // Shuffle again
         this._renderSvc.shuffle();
@@ -64,13 +111,13 @@ export class ConfigComponent implements AfterViewInit {
 
     private _addImage () {
 
-        let flen = this._inputElem.files.length;
-        if (this.totalCounter + this._inputElem.files.length > this.maxImages ) {
-            flen = this.maxImages - this.totalCounter;
+        let fLen = this._inputElem.files.length;
+        if (this._totalCounter + this._inputElem.files.length > this.maxImages ) {
+            fLen = this.maxImages - this._totalCounter;
         }
-        this.totalCounter += flen;
+        this._totalCounter += fLen;
 
-        this._imagesService.addFiles( this._inputElem.files, flen ).pipe(
+        this._imagesService.addFiles( this._inputElem.files, fLen ).pipe(
             catchError( err => {
 
                 // Something substantial happened => What TODO???
@@ -85,38 +132,8 @@ export class ConfigComponent implements AfterViewInit {
                 return of( res );
             } ),
             finalize( () => {
-
                 // When all is done => remove the this._inputElem from the dom again
-                // this.render.removeChild( this.frame.nativeElement, this._inputElem );
-
-                if ( this.images.length < IMAGES_SERVICE_IMAGES_MINIMUM ) {
-                    // this.text = this.textMinError;
-                }
-
-                // if ( !this._imagesService.working ) {
-                //     if ( this.totalCounter > this.maxImages ) {
-                //
-                //         // this.handleMaxValidation();
-                //         this.totalCounter = this.maxImages;
-                //     }
-                //     if ( this.totalCounter >= this.maxImages ) {
-                //         this.disableUploadbtn = true;
-                //     }
-                //
-                // }
-                //
-                // if ( this.totalCounter < 4 ) {
-                //
-                //     this.text = this.textMinError;
-                //     this.magenta = true;
-                //
-                // } else {
-                //
-                //     this.text = this.textNormal;
-                //     this.magenta = false;
-                //
-                // }
-
+                this._renderer.removeChild( this._konvaCanvas.nativeElement, this._inputElem );
             } )
         ).subscribe( () => {
 

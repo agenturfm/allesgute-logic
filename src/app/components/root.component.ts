@@ -3,10 +3,10 @@ import { Component, OnInit } from '@angular/core';
 @Component({
     selector: 'app-root',
     template: `
-        <app-home *ngIf="!configActive"></app-home>
+        <app-home *ngIf="!configActive" (startConfig)="configActive=$event.valueOf()"></app-home>
         <app-config *ngIf="configActive"></app-config>
     `
 })
 export class RootComponent {
-    public configActive = true;
+    public configActive = false;
 }

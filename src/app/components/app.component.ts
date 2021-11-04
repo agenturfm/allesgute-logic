@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-home',
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
+
+    @Output('startConfig') private _startConfig: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     public isLoading: boolean = true;
     public headerImgPath: string = 'assets/images/web/';
@@ -40,13 +42,16 @@ export class AppComponent implements OnInit {
         this.doImgTransform(0);
     }
 
+    public startConfig() {
+        this._startConfig.emit(true);
+    }
+
     public get activeCategory () : number {
         return this._activeCategory;
     }
 
     public set activeCategory ( value : number ) {
 
-        console.log( 'new value', value );
         if (this._activeCategory !== value ) {
             this.doImgTransform(value);
         }
@@ -58,7 +63,5 @@ export class AppComponent implements OnInit {
             this._activeCategory = value;
             this.isLoading = false;
         }, 1000 );
-        // //loading bar
-        // $('.hero-section .loading-bar').css('width', 80 + '%');
     }
 }

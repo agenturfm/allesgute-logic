@@ -3,49 +3,13 @@
 <!--UPLOAD SECTION-->
 <div class="upload-section">
     <div class="section-left type-1">
-        <div class="canvas-wrapper">
-                        <div class="canvas mobile-lg">
-                            <div id="konvacanvas" #konvacanvas appMosaic>
-                                <input #imageinput type="file" multiple accept="image/*" [style.display]="'none'">
-                            </div>
-<!--                            <div class="spinner"> </div>-->
-<!--                            <div class="row-1">-->
-<!--                                <div class="box-1">-->
-<!--                                    <div class="img img-1" style="background-image: url('assets/images/web/birth/Canvas/garrett-jackson-oOnJWBMlb5A-unsplash.png');"></div>-->
-<!--                                </div>-->
-<!--                                <div class="box-2">-->
-<!--                                    <div class="img img-2" style="background-image: url('assets/images/web/birth/Canvas/kaushal-mishra-p76UivR30oo-unsplash.png');"></div>-->
-<!--                                </div>-->
-<!--                                <div class="box-3">-->
-<!--                                    <div class="img img-3" style="background-image: url('assets/images/web/birth/Canvas/brytny-com-C4rXIFSzEXk-unsplash.png');"></div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="row-2">-->
-<!--                                <div class="box-1">-->
-<!--                                    <div class="row-1">-->
-<!--                                        <div class="box-1">-->
-<!--                                            <div class="img img-4" style="background-image: url('assets/images/web/birth/Canvas/peter-oslanec-Mu6RjGUzrQA-unsplash.png');"></div>-->
-<!--                                        </div>-->
-<!--                                        <div class="box-2">-->
-<!--                                            <div class="img img-5" style="background-image: url('assets/images/web/birth/Canvas/minnie-zhou-0hiUWSi7jvs-unsplash.png');"></div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                    <div class="row-2">-->
-<!--                                        <div class="box-1">-->
-<!--                                            <div class="img img-6" style="background-image: url('assets/images/web/birth/Canvas/fe-ngo-bvx3G7RkOts-unsplash.png');"></div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                                <div class="box-2">-->
-<!--                                    <div class="box-1">-->
-<!--                                        <div class="img img-7" style="background-image: url('assets/images/web/birth/Canvas/colin-maynard-CEEhmAGpYzE-unsplash.png');"></div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-                        </div>
+        <div class="canvas-wrapper" [class]="sizeClass">
+            <div class="canvas mobile-lg">
+                <div id="konvacanvas" #konvacanvas appMosaic></div>
+            </div>
         </div>
         <div class="btn-container">
-            <a class="btn shuffle-btn">
+            <a class="btn shuffle-btn" (click)="shuffleImages()">
                 <div class="btn-wrapper">
                     <i class="icon icon-shuffle-white"></i><span>Fotos neu mischen</span>
                 </div>
@@ -90,19 +54,19 @@
                     <h2 class="section-title">Größe</h2>
                 </div>
                 <div class="sizes-list">
-                    <div class="size-item selected" data-size="normal">
+                    <div class="size-item" [class.selected]="canvasSize==0" (click)="canvasSize=0" data-size="normal">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-sm"></div>
                         </div>
                         <p>40 × 40 cm</p>
                     </div>
-                    <div class="size-item" data-size="medium">
+                    <div class="size-item" [class.selected]="canvasSize==1" (click)="canvasSize=1" data-size="medium">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-md"></div>
                         </div>
                         <p>60 × 60 cm</p>
                     </div>
-                    <div class="size-item" data-size="large">
+                    <div class="size-item" [class.selected]="canvasSize==2" (click)="canvasSize=2" data-size="large">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-lg"></div>
                         </div>

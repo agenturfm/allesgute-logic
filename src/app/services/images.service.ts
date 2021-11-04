@@ -1,14 +1,12 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-/* tslint:disable:variable-name no-inferrable-types no-console */
 import { Inject, Injectable, isDevMode, Optional } from '@angular/core';
 import { forkJoin, from, Observable } from 'rxjs';
 import { WorkerService } from './worker.service';
 import { InputMessage, Methods } from '../../worker/shared/message.class';
 import { mergeMap, switchMap, tap } from 'rxjs/operators';
-// import { DeviceDetectorService } from 'ngx-device-detector';
 import { Tile } from './design.abstract';
 import { AppService } from './app.service';
 
@@ -18,14 +16,11 @@ export const IMAGES_SERVICE_IMAGES_MINIMUM: number = 1;
 const LOW_RESOLUTION_WIDTH_LIMIT: number = 1024;    // Every image with an width under this value is considered low-res
 
 export enum UIImageEXIFRotation {
-
     /* See https://www.impulseadventure.com/photo/exif-orientation.html for details */
-
     deg0 = 1,
     deg180 = 3,
     deg90 = 6,
     deg270 = 8
-
 }
 
 export class UIImage {
@@ -39,97 +34,64 @@ export class UIImage {
         private readonly _rotation: UIImageEXIFRotation = UIImageEXIFRotation.deg0,
         private readonly _originalWidth: number
     ) {
-
         this._lowResolution = _originalWidth < LOW_RESOLUTION_WIDTH_LIMIT;
-
     }
 
     public get handle (): File {
-
         return this._handle;
-
     }
 
     public get dataURL (): string {
-
         return this._image.src;
-
     }
 
     public get filename (): string {
-
         return this._handle.name;
-
     }
 
     // noinspection JSUnusedGlobalSymbols
     public get mime (): string {
-
         return this._handle.type;
-
     }
 
     public get image (): HTMLImageElement {
-
         return this._image;
-
     }
 
     public get rotation (): UIImageEXIFRotation {
-
         return this._rotation;
-
     }
 
     public get lowResolution (): boolean {
-
         // GH-336: Do not check for low resolution images anymore!
         // return this._lowResolution;
-
         return false;
-
     }
 
     public get originalWidth (): number {
-
         return this._originalWidth;
-
     }
 
     public get tile (): Tile {
-
         return this._tile;
-
     }
 
     public set tile ( value: Tile ) {
-
         this._tile = value;
-
     }
 
     public getRotationDegree (): number {
 
         if ( this._rotation === UIImageEXIFRotation.deg0 ) {
-
             return 0;
-
         } else if ( this._rotation === UIImageEXIFRotation.deg90 ) {
-
             return 90;
-
         } else if ( this._rotation === UIImageEXIFRotation.deg180 ) {
-
             return 180;
-
         } else if ( this._rotation === UIImageEXIFRotation.deg270 ) {
-
             return 270;
-
         }
-
         return 0;
-
     }
 
 }
@@ -141,30 +103,18 @@ export class ImagesService {
 
     private readonly _maxImages : number = IMAGES_SERVICE_IMAGES_TOTAL_ALLOWED;
     private readonly _images : Array< UIImage > = new Array< UIImage >();
-    private readonly _uiImageWidth : number;
 
     private _working : boolean = false;
     private _processingTotal : number = 0;
     private _processingCurrent : number = 0;
 
     public constructor (
-        @Inject( 'uiImageWidthDesktop' ) @Optional() _uiImageWidthDesktop: number = 640,
-        @Inject( 'uiImageWidthMobil' ) @Optional() _uiImageWidthMobil: number = 640,
+        @Inject( 'uiImageWidth' ) @Optional() private readonly _uiImageWidth: number = 800,
         @Inject( 'uiImageQuality' ) @Optional() private readonly _uiImageQuality: number = 0.5,
         private readonly _workerService: WorkerService,
         // private readonly _deviceDetector: DeviceDetectorService,
         private readonly _appService: AppService
     ) {
-
-        // if ( _deviceDetector.isMobile() ) {
-
-            // this._uiImageWidth = _uiImageWidthMobil;
-        // } else {
-        //
-            this._uiImageWidth = _uiImageWidthDesktop;
-        //
-        // }
-
     }
 
     public get current (): number {
@@ -198,7 +148,7 @@ export class ImagesService {
 
     public addFiles ( files: FileList, length: number ): Observable< Array< boolean > | boolean > {
 
-        // Calculate the processingTotal
+        // Calculate the processingTotal.
         this._processingTotal = Math.min( length, this._maxImages - this._images.length );
 
         const obsFiles: Array< File > = new Array< File >();
@@ -256,46 +206,6 @@ export class ImagesService {
             }
 
         }
-
-    }
-
-    public swapImages ( img1UUID: string, img2UUID: string ): void {
-
-        const img1: UIImage = this.getImageByUUID( img1UUID );
-        const img2: UIImage = this.getImageByUUID( img2UUID );
-
-        if ( !! img1 && !! img2 ) {
-
-            const img1Idx: number = this._images.indexOf( img1 );
-            const img2Idx: number = this._images.indexOf( img2 );
-
-            if ( img1Idx > -1 && img2Idx > -1 ) {
-
-                // Swap images in array
-                const tempImg: UIImage = img1;
-                this._images[img1Idx] = this._images[img2Idx];
-                this._images[img2Idx] = tempImg;
-
-                // Swap their tile references
-                const tempTile: Tile = img1.tile;
-                img1.tile = img2.tile;
-                img2.tile = tempTile;
-
-            }
-
-        }
-
-    }
-
-    public replaceFile ( oldImg: string, newImg: File ): Observable< boolean > {
-
-        return this.addFile( newImg, oldImg );
-
-    }
-
-    public getImageByUUID ( uuid: string ): UIImage | undefined {
-
-        return this._images.find( img => !! img.tile && img.tile.tileId === uuid );
 
     }
 
@@ -369,17 +279,7 @@ export class ImagesService {
 
                             // remove the original image again
                             image.remove();
-
-                            if ( !! replaceImg ) {
-
-                                const idx: number = this._images.indexOf( this.getImageByUUID( replaceImg ) );
-                                if ( idx > -1 ) {
-                                    this._images[ idx ] = newUIImage;
-                                }
-
-                            } else {
-                                this._images.push( newUIImage );
-                            }
+                            this._images.push( newUIImage );
 
                             // #10: Set canvas size to 0, reset canvas to null
                             canvas.width = 0;
