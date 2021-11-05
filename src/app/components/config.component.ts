@@ -14,18 +14,29 @@ enum CanvasSize {
     lg
 }
 
+const CanvasPrices = [
+    [ '54,90', '39,90' ],
+    [ '74,90', '59,90' ],
+    [ '84,90', '69,90' ]
+]
+
+interface PrevUIImg {
+    id: string;
+    dataURL: string;
+}
+
 @Component({
     selector: 'app-config',
     templateUrl: './config.component.html'
 })
 export class ConfigComponent implements AfterViewInit {
 
-
     @ViewChild('konvacanvas', { static: true }) private _konvaCanvas: ElementRef;
 
     private _inputElem: HTMLInputElement;
     private _totalCounter = 0;
     private _canvasSize: CanvasSize = CanvasSize.sm;
+    private _images: PrevUIImg[] = [];
 
     public constructor ( private _renderSvc: RendererService,
                          private _imagesService: ImagesService,
@@ -40,6 +51,14 @@ export class ConfigComponent implements AfterViewInit {
 
     public get canvasSize () : CanvasSize {
         return this._canvasSize;
+    }
+
+    public get canvasPriceOriginal () : string {
+        return CanvasPrices[this._canvasSize][0];
+    }
+
+    public get canvasPriceFinal () : string {
+        return CanvasPrices[this._canvasSize][1];
     }
 
     public set canvasSize ( value : CanvasSize ) {
@@ -60,8 +79,13 @@ export class ConfigComponent implements AfterViewInit {
         return this._totalCounter < this.maxImages;
     }
 
-    public get images (): Array<UIImage> {
-        return this._imagesService.images;
+    public get images (): Array<PrevUIImg> {
+        if ( this._images.length != this._imagesService.images.length ) {
+            // Make a copy of UI images, so when shuffling the previews do not also shuffle
+            this._images = [];
+            this._imagesService.images.forEach( i => this._images.push( { dataURL: i.dataURL, id: i.id } ) );
+        }
+        return this._images;
     }
 
     public get maxImages (): number {
@@ -100,13 +124,13 @@ export class ConfigComponent implements AfterViewInit {
         this._inputElem.click();
     }
 
-    public removeImage ( image: UIImage ) {
+    public removeImage ( image: string ) {
 
         this._imagesService.removeImage( image );
         this._totalCounter -= 1;
 
         // Shuffle again
-        this._renderSvc.shuffle();
+        this.shuffleImages();
     }
 
     private _addImage () {

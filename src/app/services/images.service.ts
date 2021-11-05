@@ -9,6 +9,7 @@ import { InputMessage, Methods } from '../../worker/shared/message.class';
 import { mergeMap, switchMap, tap } from 'rxjs/operators';
 import { Tile } from './design.abstract';
 import { AppService } from './app.service';
+import { v4 } from 'uuid';
 
 export const IMAGES_SERVICE_IMAGES_TOTAL_ALLOWED: number = 32;
 export const IMAGES_SERVICE_IMAGES_MINIMUM: number = 1;
@@ -26,6 +27,7 @@ export enum UIImageEXIFRotation {
 export class UIImage {
 
     private _tile : Tile = null;
+    private _id: string = v4();
     private readonly _lowResolution : boolean;
 
     public constructor (
@@ -35,6 +37,10 @@ export class UIImage {
         private readonly _originalWidth: number
     ) {
         this._lowResolution = _originalWidth < LOW_RESOLUTION_WIDTH_LIMIT;
+    }
+
+    public get id (): string {
+        return this._id;
     }
 
     public get handle (): File {
@@ -112,7 +118,6 @@ export class ImagesService {
         @Inject( 'uiImageWidth' ) @Optional() private readonly _uiImageWidth: number = 800,
         @Inject( 'uiImageQuality' ) @Optional() private readonly _uiImageQuality: number = 0.5,
         private readonly _workerService: WorkerService,
-        // private readonly _deviceDetector: DeviceDetectorService,
         private readonly _appService: AppService
     ) {
     }
@@ -141,10 +146,9 @@ export class ImagesService {
         return this._processingCurrent;
     }
 
-
-    public clear () {
-        this._images.forEach( _image => this.removeImage( _image ) );
-    }
+    // public clear () {
+    //     this._images.forEach( _image => this.removeImage( _image ) );
+    // }
 
     public addFiles ( files: FileList, length: number ): Observable< Array< boolean > | boolean > {
 
@@ -191,14 +195,14 @@ export class ImagesService {
 
     }
 
-    public removeImage ( image: UIImage ) {
+    public removeImage ( imageId: string ) {
 
-        if ( this._images.indexOf( image ) > -1 ) {
+        const idx = this._images.findIndex( img => img.id == imageId );
+        if ( idx > -1 ) {
 
-            this._images.splice( this._images.indexOf( image ), 1 );
+            this._images.splice( idx, 1 );
 
-            // MIT fix for GH-378
-            if ( this._images.length < 4 ) {
+            if ( this._images.length < 1 ) {
 
                 // MIT: Need "Bilder" component to initially open file dialog
                 // this._appService.currentAppSlide = this._appService.sliderIdBilder;

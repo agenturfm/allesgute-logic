@@ -1,12 +1,10 @@
 /*!
- * Copyright florianmatthias o.G. 2019 - All rights reserved
+ * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-/* tslint:disable:variable-name */
 import { UIImage } from './images.service';
 import Konva from 'konva';
 import { v4 } from 'uuid';
-import { EventEmitter } from '@angular/core';
 import { SceneContext } from 'konva/lib/Context';
 
 // Deprecated: Stroke width of 'splines' between images
@@ -15,31 +13,6 @@ import { SceneContext } from 'konva/lib/Context';
 
 const LOW_RES_IMAGE_LINE_COLOR: string = '#E4007B';
 
-export enum TileFilterOperationType {
-
-    'NONE',
-    'SW',
-    'Coolgray',
-    'Vintage',
-    'Cross'
-
-}
-
-export const TileFilterOperationTypeNameMap: Map<TileFilterOperationType, string> = new Map<TileFilterOperationType, string>( [
-    [ TileFilterOperationType.NONE, 'Kein-Filter' ],
-    [ TileFilterOperationType.SW, 'S&W' ],
-    [ TileFilterOperationType.Coolgray, 'Coolgray' ],
-    [ TileFilterOperationType.Vintage, 'Vintage' ],
-    [ TileFilterOperationType.Cross, 'Cross' ]
-] );
-
-export const TileFilterOperationNameTypeMap: Map<string, TileFilterOperationType> = new Map<string, TileFilterOperationType>( [
-    [ 'Kein-Filter', TileFilterOperationType.NONE ],
-    [ 'S&W', TileFilterOperationType.SW ],
-    [ 'Coolgray', TileFilterOperationType.Coolgray ],
-    [ 'Vintage', TileFilterOperationType.Vintage ],
-    [ 'Cross', TileFilterOperationType.Cross ]
-] );
 
 export class TileTransformOperations {
 
@@ -186,7 +159,6 @@ export class Tile extends Konva.Group {
     private readonly _tileId : string = v4();
     private readonly _tileCache : Array< Konva.Vector2d > = [];
     private _transformations : TileTransformOperations = new TileTransformOperations();
-    private _filter : TileFilterOperationType = TileFilterOperationType.NONE;
     private _boundingPolyLine : Konva.Line;
     private _lowResImage : boolean = false;
     // GH-339: Rotation of tile image (Prints design only)
@@ -237,18 +209,6 @@ export class Tile extends Konva.Group {
     public set transformations ( value: TileTransformOperations ) {
 
         this._transformations = value;
-
-    }
-
-    public get filter (): TileFilterOperationType {
-
-        return this._filter;
-
-    }
-
-    public set filter ( value: TileFilterOperationType ) {
-
-        this._filter = value;
 
     }
 
@@ -452,36 +412,11 @@ export class Tile extends Konva.Group {
 
 export abstract class Design extends Konva.Group {
 
-    // private readonly _tileEventEmitter : EventEmitter< HammerKonvaEventInput > = new EventEmitter< HammerKonvaEventInput >( true );
     private _shuffleDimensions : Konva.Vector2d = { x: this._dimensions.x, y: this._dimensions.y };
     private _focusedTile : Tile;
 
     protected constructor ( private _images: Array< UIImage >, private readonly _dimensions: Konva.Vector2d ) {
-
         super();
-
-        // this.on( 'hammer', ( evt: any ) => {
-        //
-        //     if ( this.tiles.length > 0 ) {
-        //
-        //         const _evt: HammerKonvaEventInput = evt as HammerKonvaEventInput;
-        //
-        //         // Fixed selection of underlying tiles => Attention: in-place "reverse" is only possible due to getter usage!
-        //         const tile: Tile = this.tiles.reverse().find( _tile => _tile.containsPoint( _evt.pointerPosition ) );
-        //
-        //         // #9: Also proceed if no tile was found;
-        //         // Functionality is required to detect if a 'panned' image is outside stage and
-        //         // that tiles can be moved in stage areas not covered by a tile (Stripes design)
-        //
-        //         _evt.tile = tile;
-        //
-        //         // Emit the hammer event
-        //         this._tileEventEmitter.emit( _evt );
-        //
-        //     }
-        //
-        // } );
-
     }
 
     protected get images (): Array< UIImage > {
@@ -509,18 +444,6 @@ export abstract class Design extends Konva.Group {
     public get tilesAmount (): number {
 
         return this.children.length;
-
-    }
-    //
-    // public get tileEventEmitter (): EventEmitter< HammerKonvaEventInput > {
-    //
-    //     return this._tileEventEmitter;
-    //
-    // }
-
-    public getImagesFilter (): TileFilterOperationType {
-
-        return this.tilesAmount > 0 ? this.tiles[0].filter : TileFilterOperationType.NONE;
 
     }
 

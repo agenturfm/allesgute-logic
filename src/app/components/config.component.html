@@ -33,7 +33,7 @@
                 <div class="photo-previews-list">
                     <div *ngFor="let image of images" class="photo-item">
                         <div class="photo" [style.background-image]="'url(\''+image.dataURL+'\')'">
-                            <div class="remove-photo" (click)="removeImage(image)"><i class="icon icon-remove"></i></div>
+                            <div class="remove-photo" (click)="removeImage(image.id)"><i class="icon icon-remove"></i></div>
                         </div>
                     </div>
                     <div *ngIf="uploadBtnVisible" class="add-photo-btn" (click)="addImage()">
@@ -76,8 +76,8 @@
             </div>
             <div class="section-block">
                 <div class="prices">
-                    <p class="original-price">€ 54,99</p>
-                    <p class="final-price">€ 39,99</p>
+                    <p class="original-price">€ {{canvasPriceOriginal}}</p>
+                    <p class="final-price">€ {{canvasPriceFinal}}</p>
                 </div>
                 <div class="msg prices-msg">
                     inkl. Versand (ca. 6-8 Werktage)
