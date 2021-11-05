@@ -7,6 +7,11 @@ import { RootComponent } from './components/root.component';
 import { HeaderComponent } from './components/header.component';
 import { MosaicDirective } from './directives/mosaic.directive';
 import { ImagesService } from './services/images.service';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MessageDialog } from './components/message.dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MessageService } from './services/message.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
     declarations: [
@@ -14,15 +19,21 @@ import { ImagesService } from './services/images.service';
         AppComponent,
         ConfigComponent,
         HeaderComponent,
-        MosaicDirective
+        MosaicDirective,
+        MessageDialog
     ],
     imports: [
-        BrowserModule
+        BrowserModule,
+        MatDialogModule,
+        MatButtonModule,
+        BrowserAnimationsModule
     ],
     providers: [
         { provide: 'uiImageWidth', useValue: 800 },
         { provide: 'uiImageQuality', useValue: 0.7 },
-        ImagesService
+        ImagesService,
+        MessageDialog,
+        MessageService
     ],
     bootstrap: [RootComponent]
 })
