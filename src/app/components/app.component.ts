@@ -12,28 +12,33 @@ export class AppComponent implements OnInit {
     public headerImgPath: string = 'assets/images/web/';
     public headerImgs: Array<Array<string>> = [
         // Geburtstag
-        [ 'birthday/Canvas/peter-bucks-lGxtfJlYSmU-unsplash.png', 'birthday/Canvas/caju-gomes-QDq3YliZg48-unsplash.png', 'birthday/Canvas/quokkabottles-gkvsCKnxRc4-unsplash.png',
-            'birthday/Canvas/miguel-teirlinck-WLlW03JZGBE-unsplash.png', 'birthday/Canvas/sara-cervera-zEwgRzJJIvk-unsplash.png', 'birthday/Canvas/designecologist--ufMDkBOwGY-unsplash.png',
-            'birthday/Canvas/nathan-dumlao-As8zq82LBpw-unsplash.png' ],
+        [ 'type-2',
+            'birthday/Canvas/peter-bucks-lGxtfJlYSmU-unsplash.jpg', 'birthday/Canvas/caju-gomes-QDq3YliZg48-unsplash.jpg', 'birthday/Canvas/quokkabottles-gkvsCKnxRc4-unsplash.jpg',
+            'birthday/Canvas/miguel-teirlinck-WLlW03JZGBE-unsplash.jpg', 'birthday/Canvas/sara-cervera-zEwgRzJJIvk-unsplash.jpg', 'birthday/Canvas/designecologist--ufMDkBOwGY-unsplash.jpg',
+            'birthday/Canvas/nathan-dumlao-As8zq82LBpw-unsplash.jpg' ],
 
         // Hochzeit
-        [ 'wedding/Canvas/marc-a-sporys-NO8Sj4dKE8k-unsplash.png', 'wedding/Canvas/kelly-sikkema-k3Us72bWWW0-unsplash.png', 'wedding/Canvas/leonardo-miranda-dvF6s1H1x68-unsplash.png',
-            'wedding/Canvas/isaiah-rustad-e0QVpFvn_fE-unsplash.png', 'wedding/Canvas/ben-waardenburg-turMjjFKEBE-unsplash.png', 'wedding/Canvas/sandy-millar-8vaQKYnawHw-unsplash.png',
-            'wedding/Canvas/olivia-bauso-30UOqDM5QW0-unsplash.png'],
+        [ 'type-3',
+            'wedding/Canvas/marc-a-sporys-NO8Sj4dKE8k-unsplash.jpg', 'wedding/Canvas/kelly-sikkema-k3Us72bWWW0-unsplash.jpg', 'wedding/Canvas/leonardo-miranda-dvF6s1H1x68-unsplash.jpg',
+            'wedding/Canvas/isaiah-rustad-e0QVpFvn_fE-unsplash.jpg', 'wedding/Canvas/ben-waardenburg-turMjjFKEBE-unsplash.jpg', 'wedding/Canvas/sandy-millar-8vaQKYnawHw-unsplash.jpg',
+            'wedding/Canvas/olivia-bauso-30UOqDM5QW0-unsplash.jpg'],
 
         // Geburt
-        [ 'birth/Canvas/garrett-jackson-oOnJWBMlb5A-unsplash.png', 'birth/Canvas/kaushal-mishra-p76UivR30oo-unsplash.png', 'birth/Canvas/brytny-com-C4rXIFSzEXk-unsplash.png',
-            'birth/Canvas/peter-oslanec-Mu6RjGUzrQA-unsplash.png', 'birth/Canvas/minnie-zhou-0hiUWSi7jvs-unsplash.png', 'birth/Canvas/fe-ngo-bvx3G7RkOts-unsplash.png',
-            'birth/Canvas/colin-maynard-CEEhmAGpYzE-unsplash.png'],
+        [ 'type-1',
+            'birth/Canvas/garrett-jackson-oOnJWBMlb5A-unsplash.jpg', 'birth/Canvas/kaushal-mishra-p76UivR30oo-unsplash.jpg', 'birth/Canvas/brytny-com-C4rXIFSzEXk-unsplash.jpg',
+            'birth/Canvas/peter-oslanec-Mu6RjGUzrQA-unsplash.jpg', 'birth/Canvas/minnie-zhou-0hiUWSi7jvs-unsplash.jpg', 'birth/Canvas/fe-ngo-bvx3G7RkOts-unsplash.jpg',
+            'birth/Canvas/colin-maynard-CEEhmAGpYzE-unsplash.jpg'],
 
         // Kommunion
-        [ 'communion/Canvas/iStock-1156416303.jpg', 'communion/Canvas/iStock-477859339.jpg', 'communion/Canvas/iStock-957298874.jpg', 'communion/Canvas/iStock-185064367.jpg',
+        [ 'type-4',
+            'communion/Canvas/iStock-1156416303.jpg', 'communion/Canvas/iStock-477859339.jpg', 'communion/Canvas/iStock-957298874.jpg', 'communion/Canvas/iStock-185064367.jpg',
             'communion/Canvas/iStock-506909031.jpg', 'communion/Canvas/iStock-649622342.jpg', 'communion/Canvas/iStock-501665150.jpg'],
 
         // Weihnachten
-        [ 'christmas/Canvas/jonathan-borba-vcX5AhBwk6s-unsplash.png', 'christmas/Canvas/dari-lli-fzZ-AY0WNVE-unsplash.png', 'christmas/Canvas/chris-benson-UWq1B5gpBIE-unsplash.png',
-            'christmas/Canvas/jonathan-borba-P3Tc5ZxHowk-unsplash.png', 'christmas/Canvas/valentin-petkov-SJ9LXHONNv4-unsplash.png', 'christmas/Canvas/roberto-nickson-u6fDUe2x11g-unsplash.png',
-            'christmas/Canvas/kate-hliznitsova-GWrjiKCiKw8-unsplash.png']
+        [ 'type-5',
+            'christmas/Canvas/jonathan-borba-vcX5AhBwk6s-unsplash.jpg', 'christmas/Canvas/dari-lli-fzZ-AY0WNVE-unsplash.jpg', 'christmas/Canvas/chris-benson-UWq1B5gpBIE-unsplash.jpg',
+            'christmas/Canvas/jonathan-borba-P3Tc5ZxHowk-unsplash.jpg', 'christmas/Canvas/valentin-petkov-SJ9LXHONNv4-unsplash.jpg', 'christmas/Canvas/roberto-nickson-u6fDUe2x11g-unsplash.jpg',
+            'christmas/Canvas/kate-hliznitsova-GWrjiKCiKw8-unsplash.jpg']
     ];
 
     private _activeCategory: number = 0;
