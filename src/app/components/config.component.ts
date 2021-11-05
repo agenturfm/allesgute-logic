@@ -7,6 +7,7 @@ import { RendererService } from '../services/renderer.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../services/images.service';
+import { MessageService } from '../services/message.service';
 
 enum CanvasSize {
     sm,
@@ -31,6 +32,10 @@ interface PrevUIImg {
 })
 export class ConfigComponent implements AfterViewInit {
 
+    public acceptAGB: boolean = false;
+    public acceptDSGVO: boolean = false;
+    public tooltip: boolean = false;
+
     @ViewChild('konvacanvas', { static: true }) private _konvaCanvas: ElementRef;
 
     private _inputElem: HTMLInputElement;
@@ -40,7 +45,8 @@ export class ConfigComponent implements AfterViewInit {
 
     public constructor ( private _renderSvc: RendererService,
                          private _imagesService: ImagesService,
-                         private _renderer: Renderer2 )
+                         private _renderer: Renderer2,
+                         private _msgDialog: MessageService )
     {
     }
 
@@ -79,9 +85,19 @@ export class ConfigComponent implements AfterViewInit {
         return this._totalCounter < this.maxImages;
     }
 
+    public get tooltipVisible (): boolean {
+        return window.innerWidth < 1200 && this.tooltip;
+    }
+
+    public set tooltipVisible ( value: boolean ) {
+        if ( window.innerWidth < 1200 ) {
+            this.tooltip = !value;
+        }
+    }
+
     public get images (): Array<PrevUIImg> {
         if ( this._images.length != this._imagesService.images.length ) {
-            // Make a copy of UI images, so when shuffling the previews do not also shuffle
+            // Make a copy of UI images, so when shuffling the previews do not shuffle as well
             this._images = [];
             this._imagesService.images.forEach( i => this._images.push( { dataURL: i.dataURL, id: i.id } ) );
         }
@@ -98,6 +114,19 @@ export class ConfigComponent implements AfterViewInit {
 
     public get progress (): number {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
+    }
+
+    public submitPayment () {
+        if ( !this.acceptAGB || !this.acceptDSGVO ) {
+            this._msgDialog.openDialog( `Akzeptieren Sie bitte die allgemeinen Geschäftsbedingungen und die Datenschutzerklärung!`);
+            return;
+        }
+        if (this._images.length == 0) {
+            this._msgDialog.openDialog('Es wurden keine Fotos ausgewählt!');
+            return;
+        }
+
+        // @todo: Continue to checkout
     }
 
     public shuffleImages () {

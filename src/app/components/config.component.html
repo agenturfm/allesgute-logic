@@ -14,7 +14,7 @@
                     <i class="icon icon-shuffle-white"></i><span>Fotos neu mischen</span>
                 </div>
             </a>
-            <div class="tooltip">
+            <div class="tooltip" [class.show]="tooltip" (click)="tooltipVisible=tooltip">
                 <div class="txt">Die Fotos werden immer per Zufallsprinzip neu angeordnet.</div>
             </div>
 
@@ -86,16 +86,16 @@
             <div class="section-block">
                 <div class="checkbox-list">
                     <div class="checkbox-group">
-                        <div class="checkbox"><i class="icon icon-check"></i></div>
+                        <div class="checkbox" [class.checked]="acceptAGB" (click)="acceptAGB=!acceptAGB"><i class="icon icon-check"></i></div>
                         <div class="label">Ich akzeptiere die <a href="">allgemeinen Geschäftsbedingungen.</a></div>
                     </div>
                     <div class="checkbox-group">
-                        <div class="checkbox"><i class="icon icon-check"></i></div>
+                        <div class="checkbox" [class.checked]="acceptDSGVO" (click)="acceptDSGVO=!acceptDSGVO"><i class="icon icon-check"></i></div>
                         <div class="label">Ich habe die <a href="">Datenschutzerklärung</a> gelesen und bin damit einverstanden.</div>
                     </div>
                 </div>
             </div>
-            <div class="payment-btn">
+            <div class="payment-btn" (click)="submitPayment()">
                 <div class="wrapper">
                     <a class="btn pay-btn">
                         <div class="btn-wrapper">
