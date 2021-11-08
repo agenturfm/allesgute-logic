@@ -25,6 +25,7 @@
         "@angular/platform-browser": "~12.2.12",
         "@angular/platform-browser-dynamic": "~12.2.12",
         "@angular/service-worker": "~12.2.12",
+        "@paypal/paypal-js": "~4.1.0",
         "konva": "~8.2.3",
         "rxjs": "~6.6.0",
         "tslib": "~2.3.0",
