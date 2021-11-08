@@ -12,6 +12,7 @@ import { MessageDialog } from './components/message.dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MessageService } from './services/message.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { PaypalComponent } from './components/paypal.component';
 
 @NgModule({
     declarations: [
@@ -20,7 +21,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
         ConfigComponent,
         HeaderComponent,
         MosaicDirective,
-        MessageDialog
+        MessageDialog,
+        PaypalComponent
     ],
     imports: [
         BrowserModule,
@@ -31,6 +33,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     providers: [
         { provide: 'uiImageWidth', useValue: 800 },
         { provide: 'uiImageQuality', useValue: 0.7 },
+        { provide: 'PAYPAL_CLIENT_ID', useValue: 'test' },
         ImagesService,
         MessageDialog,
         MessageService

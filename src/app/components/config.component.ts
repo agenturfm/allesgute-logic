@@ -2,7 +2,7 @@
  * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-import { AfterViewInit, Component, ElementRef, isDevMode, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, isDevMode, Renderer2, ViewChild } from '@angular/core';
 import { RendererService } from '../services/renderer.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -32,9 +32,8 @@ interface PrevUIImg {
 })
 export class ConfigComponent implements AfterViewInit {
 
-    public acceptAGB: boolean = false;
-    public acceptDSGVO: boolean = false;
     public tooltip: boolean = false;
+    public imagesLength: EventEmitter<number> = new EventEmitter<number>();
 
     @ViewChild('konvacanvas', { static: true }) private _konvaCanvas: ElementRef;
 
@@ -100,6 +99,7 @@ export class ConfigComponent implements AfterViewInit {
             // Make a copy of UI images, so when shuffling the previews do not shuffle as well
             this._images = [];
             this._imagesService.images.forEach( i => this._images.push( { dataURL: i.dataURL, id: i.id } ) );
+            this.imagesLength.emit(this._images.length);
         }
         return this._images;
     }
@@ -114,19 +114,6 @@ export class ConfigComponent implements AfterViewInit {
 
     public get progress (): number {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
-    }
-
-    public submitPayment () {
-        if ( !this.acceptAGB || !this.acceptDSGVO ) {
-            this._msgDialog.openDialog( `Akzeptieren Sie bitte die allgemeinen Geschäftsbedingungen und die Datenschutzerklärung!`);
-            return;
-        }
-        if (this._images.length == 0) {
-            this._msgDialog.openDialog('Es wurden keine Fotos ausgewählt!');
-            return;
-        }
-
-        // @todo: Continue to checkout
     }
 
     public shuffleImages () {
