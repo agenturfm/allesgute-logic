@@ -4,6 +4,7 @@
 
 export const environment = {
     production: false,
+    PAYPAL_CLIENT_ID: 'sb',         // Sandbox
     backendAPI: 'http://localhost:3003',    /* No tailing "/" allowed!! */
     // backendAPI: 'https://api.printyomo.com',    /* No tailing "/" allowed!! */
     shopBaseURL: 'https://shop.printyomo.com'       /* No tailing "/" allowed!! */
