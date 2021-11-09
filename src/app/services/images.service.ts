@@ -199,18 +199,8 @@ export class ImagesService {
 
         const idx = this._images.findIndex( img => img.id == imageId );
         if ( idx > -1 ) {
-
             this._images.splice( idx, 1 );
-
-            if ( this._images.length < 1 ) {
-
-                // MIT: Need "Bilder" component to initially open file dialog
-                // this._appService.currentAppSlide = this._appService.sliderIdBilder;
-
-            }
-
         }
-
     }
 
     private addFile ( file: File, replaceImg?: string ): Observable< boolean > {

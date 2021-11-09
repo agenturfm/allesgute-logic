@@ -8,6 +8,7 @@ import { MosaicDesign } from './mosaic-design.class';
 import { ImagesService } from './images.service';
 import Konva from 'konva';
 import { Observable } from 'rxjs';
+import { v4 } from 'uuid';
 
 
 const PREVIEW_IMAGE_WIDTH: number = 1200;
@@ -34,6 +35,7 @@ export class RendererService {
     // private readonly _backgroundLayer : Konva.Layer = new Konva.Layer( { clearBeforeDraw: true, listening: false } );
     private readonly _backgroundRect : Konva.Rect = new Konva.Rect( { fillEnabled: true, fill: '#FFFFFF' } );
     private _activeRendererDesign : Design = null;
+    private _orderId: string = '';
 
     public constructor (
         @Inject( 'uiImageQuality' ) @Optional() private readonly _uiImageQuality: number = 0.5,
@@ -42,6 +44,8 @@ export class RendererService {
     }
 
     public init ( container: HTMLDivElement ) {
+
+        this._orderId = v4();
 
         this._containerElement = container;
         this._stage = new Konva.Stage( { draggable: false, container: this._containerElement.id } );
@@ -64,13 +68,19 @@ export class RendererService {
     }
 
     public get height (): number {
-
         return this._stage.height();
-
     }
 
     public setSize ( width, height ) {
         this.updateStageDimensions( width, height );
+    }
+
+    public get orderId () : string {
+        return this._orderId;
+    }
+
+    public get activeDesign () : Design {
+        return this._activeRendererDesign;
     }
 
     public shuffle (): void {
@@ -118,10 +128,10 @@ export class RendererService {
     /**
      * Generate a preview image for sharing
      *
-     * @param yomo      The yomo
+     * @param image      The image
      * @returns         Observable for new image
      */
-    public generatePreview ( yomo: string = this.getCanvasImageData() ): Observable<string> {
+    public generatePreview ( image: string = this.getCanvasImageData() ): Observable<string> {
 
         return new Observable<string>( subscriber => {
 
@@ -133,9 +143,9 @@ export class RendererService {
             const ctx = canvas.getContext( '2d' );
 
             const previewImg = new Image();
-            const logo = new Image();
+            // const logo = new Image();
 
-            logo.onload = () => {
+            // logo.onload = () => {
 
                 previewImg.onload = () => {
 
@@ -145,17 +155,17 @@ export class RendererService {
                     ctx.drawImage( previewImg, PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_BORDER,
                         PREVIEW_IMAGE_WIDTH - 2 * PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_HEIGHT - 2 * PREVIEW_IMAGE_BORDER );
 
-                    const logoW: number = PREVIEW_IMAGE_LOGO_WIDTH * PREVIEW_IMAGE_LOGO_SCALE;
-                    const logoH: number = PREVIEW_IMAGE_LOGO_HEIGHT * PREVIEW_IMAGE_LOGO_SCALE;
-                    ctx.drawImage( logo, PREVIEW_IMAGE_WIDTH / 2 - logoW / 2,
-                        ( PREVIEW_IMAGE_BORDER - logoH ) / 2, logoW, logoH );
+                    // const logoW: number = PREVIEW_IMAGE_LOGO_WIDTH * PREVIEW_IMAGE_LOGO_SCALE;
+                    // const logoH: number = PREVIEW_IMAGE_LOGO_HEIGHT * PREVIEW_IMAGE_LOGO_SCALE;
+                    // ctx.drawImage( logo, PREVIEW_IMAGE_WIDTH / 2 - logoW / 2,
+                    //     ( PREVIEW_IMAGE_BORDER - logoH ) / 2, logoW, logoH );
 
-                    ctx.font = `${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE }px ${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_FAMILY }`;
-                    ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-                    ctx.fillText( PREVIEW_IMAGE_BOTTOM_TEXT, PREVIEW_IMAGE_WIDTH / 2,
-                        PREVIEW_IMAGE_HEIGHT - ( PREVIEW_IMAGE_BORDER + PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE ) / 2 );
+                    // ctx.font = `${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE }px ${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_FAMILY }`;
+                    // ctx.fillStyle = 'black';
+                    // ctx.textAlign = 'center';
+                    // ctx.textBaseline = 'top';
+                    // ctx.fillText( PREVIEW_IMAGE_BOTTOM_TEXT, PREVIEW_IMAGE_WIDTH / 2,
+                    //     PREVIEW_IMAGE_HEIGHT - ( PREVIEW_IMAGE_BORDER + PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE ) / 2 );
 
                     const prev: string = canvas.toDataURL( 'image/jpeg', 0.8 );
 
@@ -164,11 +174,11 @@ export class RendererService {
 
                 };
 
-                previewImg.src = yomo;
+                previewImg.src = image;
 
-            };
-
-            logo.src = PREVIEW_IMAGE_LOGO_SRC;
+            // };
+            //
+            // logo.src = PREVIEW_IMAGE_LOGO_SRC;
 
         } );
 
@@ -183,15 +193,7 @@ export class RendererService {
     // }
 
     public redraw (): void {
-
         this._stage.batchDraw();
-
-    }
-
-    public getStageDimensions (): Konva.Vector2d {
-
-        return { x:  this._stage.width(), y: this._stage.height() };
-
     }
 
     private updateStageDimensions ( width: number, height: number ): void {
@@ -212,7 +214,7 @@ export class RendererService {
 
             }
 
-            this._stage.draw();
+            this.redraw();
 
         }
 

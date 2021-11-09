@@ -13,6 +13,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MessageService } from './services/message.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PaypalComponent } from './components/paypal.component';
+import { CheckoutService } from './services/checkout.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
     declarations: [
@@ -28,7 +30,8 @@ import { PaypalComponent } from './components/paypal.component';
         BrowserModule,
         MatDialogModule,
         MatButtonModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        HttpClientModule
     ],
     providers: [
         { provide: 'uiImageWidth', useValue: 800 },
@@ -36,7 +39,8 @@ import { PaypalComponent } from './components/paypal.component';
         { provide: 'PAYPAL_CLIENT_ID', useValue: 'test' },
         ImagesService,
         MessageDialog,
-        MessageService
+        MessageService,
+        CheckoutService,
     ],
     bootstrap: [RootComponent]
 })

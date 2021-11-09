@@ -4,10 +4,11 @@
 
 export const environment = {
     production: false,
-    PAYPAL_CLIENT_ID: 'sb',         // Sandbox
-    backendAPI: 'http://localhost:3003',    /* No tailing "/" allowed!! */
-    // backendAPI: 'https://api.printyomo.com',    /* No tailing "/" allowed!! */
-    shopBaseURL: 'https://shop.printyomo.com'       /* No tailing "/" allowed!! */
+    PAYPAL_CLIENT_ID: 'AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX',         // Sandbox
+    appVersion: require('../../package.json').version + '-dev',
+    backendAPI: 'http://localhost:3000',             /* No tailing "/" allowed!! */
+    // backendAPI: 'https://api.printyomo.com',       /* No tailing "/" allowed!! */
+    shopBaseURL: 'https://shop.printyomo.com'        /* No tailing "/" allowed!! */
 };
 
 /*
