@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -7,6 +8,8 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 export class AppComponent implements OnInit {
 
     @Output('startConfig') private _startConfig: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+    public appVersion: string = environment.appVersion;
 
     public isLoading: boolean = true;
     public headerImgPath: string = 'assets/images/web/';
