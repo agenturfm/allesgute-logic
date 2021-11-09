@@ -8,18 +8,19 @@ import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../services/images.service';
 import { MessageService } from '../services/message.service';
+import { CheckoutService } from '../services/checkout.service';
 
-enum CanvasSize {
-    sm,
-    md,
-    lg
+export enum CanvasSize {
+    sm = 40,
+    md = 60,
+    lg = 80
 }
 
-const CanvasPrices = [
-    [ '54,90', '39,90' ],
-    [ '74,90', '59,90' ],
-    [ '84,90', '69,90' ]
-]
+const CanvasPrices: Map<CanvasSize, string[]> = new Map<CanvasSize, string[]>( [
+    [ CanvasSize.sm, [ '54,90', '39,90' ]],
+    [ CanvasSize.md, [ '74,90', '59,90' ]],
+    [ CanvasSize.lg, [ '84,90', '69,90' ]]
+])
 
 interface PrevUIImg {
     id: string;
@@ -33,9 +34,11 @@ interface PrevUIImg {
 export class ConfigComponent implements AfterViewInit {
 
     public tooltip: boolean = false;
+    public canvasSizesEnum: number[] = [CanvasSize.sm, CanvasSize.md, CanvasSize.lg];
     public imagesLength: EventEmitter<number> = new EventEmitter<number>();
 
     @ViewChild('konvacanvas', { static: true }) private _konvaCanvas: ElementRef;
+    @ViewChild('fileinput', { static: true }) private _fileInput: ElementRef;
 
     private _inputElem: HTMLInputElement;
     private _totalCounter = 0;
@@ -45,25 +48,25 @@ export class ConfigComponent implements AfterViewInit {
     public constructor ( private _renderSvc: RendererService,
                          private _imagesService: ImagesService,
                          private _renderer: Renderer2,
-                         private _msgDialog: MessageService )
-    {
-    }
+                         private _msgDialog: MessageService,
+                         private _checkoutSvc: CheckoutService )
+    {}
 
     public ngAfterViewInit () : void {
         this._renderSvc.init( this._konvaCanvas.nativeElement );
-        setTimeout( () => this.addImage(), 100);
+        setTimeout( () => this.addImage(), 50);
+    }
+
+    public get canvasPriceOriginal () : string {
+        return CanvasPrices.get(this._canvasSize)[0];
+    }
+
+    public get canvasPriceFinal () : string {
+        return CanvasPrices.get(this._canvasSize)[1];
     }
 
     public get canvasSize () : CanvasSize {
         return this._canvasSize;
-    }
-
-    public get canvasPriceOriginal () : string {
-        return CanvasPrices[this._canvasSize][0];
-    }
-
-    public get canvasPriceFinal () : string {
-        return CanvasPrices[this._canvasSize][1];
     }
 
     public set canvasSize ( value : CanvasSize ) {
@@ -116,6 +119,15 @@ export class ConfigComponent implements AfterViewInit {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
     }
 
+    public uploadTest () {
+        this._checkoutSvc.size = this._canvasSize;
+        this._checkoutSvc.amount = 1;
+
+        this._checkoutSvc.upload().subscribe( {
+            next: value => console.log( value )
+        });
+    }
+
     public shuffleImages () {
         this._renderSvc.shuffle();
     }
@@ -126,15 +138,14 @@ export class ConfigComponent implements AfterViewInit {
         // Generates awkward behaviour if selecting same files twice;
         // No clean element reset method found, so create it dynamically
         this._inputElem = this._renderer.createElement( 'input' );
-
-        // Safari under iOS requires element to be within DOM
-        this._renderer.appendChild( this._konvaCanvas.nativeElement, this._inputElem );
-
         this._inputElem.type = 'file';
         this._inputElem.multiple = true;
         this._inputElem.accept = 'image/*';
         this._inputElem.style.display = 'none';
-        this._inputElem.addEventListener( 'change', () => this._addImage() );
+        this._inputElem.onchange = () => this._addImage();
+
+        // Safari under iOS requires element to be within DOM
+        this._renderer.appendChild( this._fileInput.nativeElement, this._inputElem );
 
         // Trigger file selection dialog
         this._inputElem.click();
@@ -173,7 +184,8 @@ export class ConfigComponent implements AfterViewInit {
             } ),
             finalize( () => {
                 // When all is done => remove the this._inputElem from the dom again
-                this._renderer.removeChild( this._konvaCanvas.nativeElement, this._inputElem );
+                // @todo: click on 'cancel' in file dialog does not end up here and seems to be very hard to detect
+                this._renderer.removeChild( this._fileInput.nativeElement, this._inputElem );
             } )
         ).subscribe( () => {
 

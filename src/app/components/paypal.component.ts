@@ -81,7 +81,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         try {
             paypal = await loadScript({
                 "client-id": this._paypalClientId,
-                "buyer-country": 'DE',      // sandbox only
+                // "buyer-country": 'DE',      // sandbox only
                 currency: "EUR",
                 intent: 'capture'
             });

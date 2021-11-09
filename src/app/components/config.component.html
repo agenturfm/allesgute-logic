@@ -3,10 +3,13 @@
 <!--UPLOAD SECTION-->
 <div class="upload-section">
     <div class="section-left type-1">
-        <div class="canvas-wrapper" [class]="sizeClass">
-            <div class="canvas mobile-lg">
+        <div class="canvas-wrapper" #fileinput [class]="sizeClass">
+            <!-- Konva canvas -->
+            <div class="canvas mobile-lg" [class.loading]="working">
                 <div id="konvacanvas" #konvacanvas appMosaic></div>
+                <div class="spinner" [class.loading]="working"></div>
             </div>
+            <!-- End Konva canvas -->
         </div>
         <div class="btn-container">
             <a class="btn shuffle-btn" (click)="shuffleImages()">
@@ -54,19 +57,19 @@
                     <h2 class="section-title">Größe</h2>
                 </div>
                 <div class="sizes-list">
-                    <div class="size-item" [class.selected]="canvasSize==0" (click)="canvasSize=0" data-size="normal">
+                    <div class="size-item" [class.selected]="canvasSize==canvasSizesEnum[0]" (click)="canvasSize=canvasSizesEnum[0]" data-size="normal">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-sm"></div>
                         </div>
                         <p>40 × 40 cm</p>
                     </div>
-                    <div class="size-item" [class.selected]="canvasSize==1" (click)="canvasSize=1" data-size="medium">
+                    <div class="size-item" [class.selected]="canvasSize==canvasSizesEnum[1]" (click)="canvasSize=canvasSizesEnum[1]" data-size="medium">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-md"></div>
                         </div>
                         <p>60 × 60 cm</p>
                     </div>
-                    <div class="size-item" [class.selected]="canvasSize==2" (click)="canvasSize=2" data-size="large">
+                    <div class="size-item" [class.selected]="canvasSize==canvasSizesEnum[2]" (click)="canvasSize=canvasSizesEnum[2]" data-size="large">
                         <div class="size-icon-wrapper">
                             <div class="size-icon size-icon-lg"></div>
                         </div>
@@ -84,6 +87,7 @@
                 </div>
             </div>
             <app-paypal [images]="imagesLength"></app-paypal>
+            <button mat-raised-button (click)="uploadTest()">Upload order</button>
         </div>
     </div>
 </div>
