@@ -38,7 +38,7 @@
         "@angular/compiler-cli": "~12.2.12",
         "@ngtools/webpack": "~12.2.12",
         "@types/jasmine": "~3.8.0",
-        "@types/node": "^12.11.1",
+        "@types/node": "^16.11.6",
         "gulp-cli": "^2.3.0",
         "gulp": "^4.0.2",
         "gulp-babel": "^8.0.0",
