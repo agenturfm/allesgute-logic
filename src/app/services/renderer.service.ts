@@ -2,7 +2,7 @@
  * Copyright florianmatthias o.G. 2021 - All rights reserved
  */
 
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, isDevMode, Optional } from '@angular/core';
 import { Design } from './design.abstract';
 import { MosaicDesign } from './mosaic-design.class';
 import { ImagesService } from './images.service';
@@ -13,14 +13,7 @@ import { v4 } from 'uuid';
 
 const PREVIEW_IMAGE_WIDTH: number = 1200;
 const PREVIEW_IMAGE_HEIGHT: number = 1200;
-const PREVIEW_IMAGE_BORDER: number = 48;
-const PREVIEW_IMAGE_BOTTOM_TEXT: string = 'printyomo.com';
-const PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE: number = 20;
-const PREVIEW_IMAGE_BOTTOM_TEXT_FONT_FAMILY: string = 'source_sans_proregular';
-const PREVIEW_IMAGE_LOGO_SRC: string = 'assets/icons/logo.svg';
-const PREVIEW_IMAGE_LOGO_WIDTH: number = 427;
-const PREVIEW_IMAGE_LOGO_HEIGHT: number = 97;
-const PREVIEW_IMAGE_LOGO_SCALE: number = 28 / PREVIEW_IMAGE_LOGO_HEIGHT;
+const PREVIEW_IMAGE_BORDER: number = 0;
 
 @Injectable( {
     providedIn: 'root'
@@ -30,10 +23,6 @@ export class RendererService {
     private _containerElement : HTMLDivElement;
     private _stage : Konva.Stage;
     private readonly _mainLayer : Konva.Layer = new Konva.Layer( { clearBeforeDraw: true } );
-    // #10: needed when generating image data from stage (preview, mockup in checkout stage)
-    // If not enabled, background will be black (visible in prints design only)
-    // private readonly _backgroundLayer : Konva.Layer = new Konva.Layer( { clearBeforeDraw: true, listening: false } );
-    private readonly _backgroundRect : Konva.Rect = new Konva.Rect( { fillEnabled: true, fill: '#FFFFFF' } );
     private _activeRendererDesign : Design = null;
     private _orderId: string = '';
 
@@ -102,27 +91,8 @@ export class RendererService {
 
     }
 
-    // public updateImages (): void {
-    //
-    //     if ( !!this._activeRendererDesign ) {
-    //
-    //         // #4 (GH #187): Re-apply images filter
-    //         const filter: TileFilterOperationType = this._activeRendererDesign.getImagesFilter();
-    //
-    //         this._activeRendererDesign.imagesChanged();
-    //
-    //         // #4
-    //         // Will redraw
-    //         // this.setImagesFilter( filter );
-    //
-    //     }
-    //
-    // }
-
     public getCanvasImageData () {
-
         return this._stage.toDataURL( { quality: 0.8, mimeType: 'image/jpeg', pixelRatio: 2.0 } );
-
     }
 
     /**
@@ -137,8 +107,8 @@ export class RendererService {
 
             const canvas = document.createElement( 'canvas' );
 
-            canvas.width = 1200;
-            canvas.height = 1200;
+            canvas.width = PREVIEW_IMAGE_WIDTH;
+            canvas.height = PREVIEW_IMAGE_HEIGHT;
 
             const ctx = canvas.getContext( '2d' );
 
@@ -147,34 +117,34 @@ export class RendererService {
 
             // logo.onload = () => {
 
-                previewImg.onload = () => {
+            previewImg.onload = () => {
 
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect( 0, 0, PREVIEW_IMAGE_WIDTH, PREVIEW_IMAGE_HEIGHT );
+                ctx.fillStyle = 'white';
+                ctx.fillRect( 0, 0, PREVIEW_IMAGE_WIDTH, PREVIEW_IMAGE_HEIGHT );
 
-                    ctx.drawImage( previewImg, PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_BORDER,
-                        PREVIEW_IMAGE_WIDTH - 2 * PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_HEIGHT - 2 * PREVIEW_IMAGE_BORDER );
+                ctx.drawImage( previewImg, PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_BORDER,
+                    PREVIEW_IMAGE_WIDTH - 2 * PREVIEW_IMAGE_BORDER, PREVIEW_IMAGE_HEIGHT - 2 * PREVIEW_IMAGE_BORDER );
 
-                    // const logoW: number = PREVIEW_IMAGE_LOGO_WIDTH * PREVIEW_IMAGE_LOGO_SCALE;
-                    // const logoH: number = PREVIEW_IMAGE_LOGO_HEIGHT * PREVIEW_IMAGE_LOGO_SCALE;
-                    // ctx.drawImage( logo, PREVIEW_IMAGE_WIDTH / 2 - logoW / 2,
-                    //     ( PREVIEW_IMAGE_BORDER - logoH ) / 2, logoW, logoH );
+                // const logoW: number = PREVIEW_IMAGE_LOGO_WIDTH * PREVIEW_IMAGE_LOGO_SCALE;
+                // const logoH: number = PREVIEW_IMAGE_LOGO_HEIGHT * PREVIEW_IMAGE_LOGO_SCALE;
+                // ctx.drawImage( logo, PREVIEW_IMAGE_WIDTH / 2 - logoW / 2,
+                //     ( PREVIEW_IMAGE_BORDER - logoH ) / 2, logoW, logoH );
 
-                    // ctx.font = `${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE }px ${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_FAMILY }`;
-                    // ctx.fillStyle = 'black';
-                    // ctx.textAlign = 'center';
-                    // ctx.textBaseline = 'top';
-                    // ctx.fillText( PREVIEW_IMAGE_BOTTOM_TEXT, PREVIEW_IMAGE_WIDTH / 2,
-                    //     PREVIEW_IMAGE_HEIGHT - ( PREVIEW_IMAGE_BORDER + PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE ) / 2 );
+                // ctx.font = `${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE }px ${ PREVIEW_IMAGE_BOTTOM_TEXT_FONT_FAMILY }`;
+                // ctx.fillStyle = 'black';
+                // ctx.textAlign = 'center';
+                // ctx.textBaseline = 'top';
+                // ctx.fillText( PREVIEW_IMAGE_BOTTOM_TEXT, PREVIEW_IMAGE_WIDTH / 2,
+                //     PREVIEW_IMAGE_HEIGHT - ( PREVIEW_IMAGE_BORDER + PREVIEW_IMAGE_BOTTOM_TEXT_FONT_SIZE ) / 2 );
 
-                    const prev: string = canvas.toDataURL( 'image/jpeg', 0.8 );
+                const prev: string = canvas.toDataURL( 'image/jpeg', 0.8 );
 
-                    subscriber.next( prev );
-                    subscriber.complete();
+                subscriber.next( prev );
+                subscriber.complete();
 
-                };
+            };
 
-                previewImg.src = image;
+            previewImg.src = image;
 
             // };
             //
@@ -198,26 +168,30 @@ export class RendererService {
 
     private updateStageDimensions ( width: number, height: number ): void {
 
-        if ( !!this._stage && (width !== this._stage.width() || height !== this._stage.height()) ) {
+        const lineStroke = this._activeRendererDesign?.getStrokeWidth() || 0;
 
-            console.log( 'New stage dimensions', width, height );
+        if ( !!this._stage && (width !== this._stage.width() - lineStroke || height !== this._stage.height() - lineStroke ) ) {
+
+            if (isDevMode()) {
+                console.log( 'New stage dimensions', width, height );
+            }
+
+            // Easiest way to remove surrounding border in canvas by shifting stage by line stroke width...
+            this._stage.offsetX( lineStroke / 2 );
+            this._stage.offsetY( lineStroke / 2 );
+
+            height += lineStroke;
+            width += lineStroke;
 
             this._stage.width( width );
             this._stage.height( height );
 
             if ( !!this._activeRendererDesign ) {
-
-                this._backgroundRect.width( width );
-                this._backgroundRect.height( height );
-
                 this._activeRendererDesign.update( { x: width, y: height }, true );
-
             }
 
             this.redraw();
-
         }
-
     }
 
 }

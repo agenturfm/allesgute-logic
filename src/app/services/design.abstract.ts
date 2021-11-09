@@ -259,25 +259,18 @@ export class Tile extends Konva.Group {
 
         // Eliminate the duplicate end points (if present)
         while ( this.path[ 0 ].x === this.path[ n - 1 ].x && this.path[ 0 ].y === this.path[ n - 1 ].y ) {
-
             n--;
-
         }
 
         // iterate over the left over points and draw a line
         for ( let i = 1; i < n; i++ ) {
-
             if ( this.path[ i ].x !== this.path[ i - 1 ].x || this.path[ i ].y !== this.path[ i - 1 ].y ) {
-
                 ctx.lineTo( this.path[ i ].x, this.path[ i ].y );
-
             }
-
         }
 
         // close the path (important for masking)
         ctx.closePath();
-
     }
 
     public addKonvaLine ( lowResolution: boolean = false, tileLineStrokeWidth: number = 3 ) {
@@ -285,20 +278,16 @@ export class Tile extends Konva.Group {
         this._lowResImage = lowResolution;
 
         this.add(
-
             this._boundingPolyLine = new Konva.Line( {
-
                 points: [].concat( ...this.path.map( value => [ value.x, value.y ] ) ),
                 strokeWidth: tileLineStrokeWidth,
                 closed: true,
                 perfectDrawEnabled: false,
                 listening: false
             } )
-
         );
 
         this.setKonvaLineLowResStatus( lowResolution );
-
     }
 
     public setKonvaLineLowResStatus ( lowResolution: boolean = this._lowResImage ): void {
@@ -486,14 +475,10 @@ export abstract class Design extends Konva.Group {
 
         // Update call without dimensions: just re-apply images
         if ( false === !!dimensions ) {
-
             dimensions = { x: this._dimensions.x, y: this._dimensions.y };
             skipShuffle = true;
-
         } else {
-
             scaleChanged = this._dimensions.x !== dimensions.x || this._dimensions.y !== dimensions.y;
-
         }
 
         // Update the dimensions first
@@ -501,10 +486,8 @@ export abstract class Design extends Konva.Group {
         this._dimensions.y = dimensions.y;
 
         if ( false === skipShuffle ) {
-
             // Clear the tiles
             this.clear();
-
         } else {
 
             // Clear the images associated to the tiles if no re-shuffle!
@@ -512,7 +495,6 @@ export abstract class Design extends Konva.Group {
 
             const currentScale: number = this._shuffleDimensions.x > 0 ? dimensions.x / this._shuffleDimensions.x : 1;
             this.scaleTilePath( currentScale );
-
         }
 
         if ( this._images.length > 0 ) {
@@ -520,221 +502,200 @@ export abstract class Design extends Konva.Group {
             if ( false === skipShuffle ) {
 
                 this._shuffleDimensions = { x: this._dimensions.x, y: this._dimensions.y };
-
                 // Compute the tiles of the selected design
                 this.computeTiles();
-
                 // Shuffle the images
                 this.shuffleImages();
-
             }
 
             // Apply the images to the tiles
             this.applyImages( ! skipShuffle, scaleChanged );
-
         }
-
     }
 
-    /**
-     * Call whenever the _content_ of one or more images was changed (e.g. replaced by another image),
-     * but the amount and tile calculation shall remain the same!
-     */
-    public imagesChanged (): void {
-
-        if ( this._images.length > 0 ) {
-
-            this.clearImages();
-            // Apply the images to the tiles
-            this.applyImages( true );
-
-        }
-
-    }
-
-    public focusTile ( tile: Tile ): void {
-
-        const boundingBox: [ Konva.Vector2d, Konva.Vector2d ] = tile.getBBPolygon();
-
-        // Adopt scale to fill nearly entire stage dimensions
-        const bbWidth: number = boundingBox[1].x - boundingBox[0].x;
-        const bbHeight: number = boundingBox[1].y - boundingBox[0].y;
-
-        const scaleX: number = this._dimensions.x / bbWidth;
-        const scaleY: number = this._dimensions.y / bbHeight;
-        const scale: number = Math.min( scaleX, scaleY ) * .85;
-
-        // Center tile in stage
-        const invScale: number = 1 / scale;
-
-        // Animate scaling / centering
-        // #9: Use this for single-shot Tween according to KonvaJS memory leak avoidance tips
-        // Ref: https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html
-        this.to( {
-            scaleX: scale,
-            scaleY: scale,
-            offsetX: boundingBox[0].x - invScale * ( ( this._dimensions.x - bbWidth * scale ) / 2 ),
-            offsetY: boundingBox[0].y - invScale * ( ( this._dimensions.y - bbHeight * scale ) / 2 ),
-            duration: .5,
-            easing: Konva.Easings.StrongEaseOut
-        } );
-
-        // Shade other tiles
-        this.shadeOtherTiles( tile );
-
-        // #7: Remember currently focused tile
-        this._focusedTile = tile;
-
-    }
-
-    /**
-     * Reset focused tile
-     *
-     * @param animation   Whether to use animation on resetting or not
-     */
-    public focusTileReset ( animation: boolean = true ): boolean {
-
-        if ( !! this._focusedTile ) {
-
-            if ( true === animation ) {
-
-                // Animate tile reset
-                // #9: Use this for single-shot Tween according to KonvaJS memory leak avoidance tips
-                // Ref: https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html
-                this.to( {
-                    scaleX: 1,
-                    scaleY: 1,
-                    offsetX: 0,
-                    offsetY: 0,
-                    duration: .5,
-                    easing: Konva.Easings.StrongEaseOut
-                } );
-
-            } else {
-
-                this.scale( { x: 1, y: 1 } );
-                this.offset( { x: 0, y: 0 } );
-
-            }
-
-            // Reset shading of other tiles
-            this.shadeOtherTiles( this._focusedTile, false );
-
-            this._focusedTile.setKonvaLineLowResStatus();
-
-            this._focusedTile = undefined;
-
-            return true;
-
-        }
-
-        return false;
-
-    }
-
-    public shadeOtherTiles ( self: Tile, shade: boolean = true ): void {
-
-        this.tiles.forEach( tile => {
-
-            if ( tile !== self ) {
-
-                // Remove previous shade poly if present
-                tile.find( '.shade' ).forEach( shadeObj => {
-
-                    shadeObj.remove();
-                    shadeObj.destroy();
-
-                } );
-
-                if ( true === shade ) {
-
-                    // Have to create a new overlay polygon, otherwise opacity on current poly
-                    // conflicts with layering of tiles; and we cannot use 'moveToTop', as this
-                    // jeopardizes image order!
-                    tile.add( new Konva.Line( {
-                        name: 'shade',
-                        points: [].concat( ...tile.path.map( entry => [ entry.x, entry.y ] ) ),
-                        fillEnabled: true,
-                        fill: 'white',
-                        opacity: 0.5,
-                        closed: true
-                    } ) );
-
-                }
-
-            }
-
-        } );
-
-    }
-
-    public removeTilesHighlight (): void {
-
-        this.tiles.forEach( tile => {
-
-            // Remove other highlights if any
-            tile.find( '.highlight' ).forEach( shadeObj => {
-
-                shadeObj.remove();
-                shadeObj.destroy();
-
-            } );
-
-        } );
-
-    }
-
-    public highlightTile ( self: Tile ): void {
-
-        self.add( new Konva.Line( {
-            name: 'highlight',
-            points: [].concat( ...self.path.map( entry => [ entry.x, entry.y ] ) ),
-            fillEnabled: true,
-            fill: 'white',
-            opacity: 0.5,
-            closed: true
-        } ) );
-
-    }
-
-    public applyUserScale ( tile: Tile, img: Konva.Image = tile.getKonvaImage(), dryRun: boolean = false ): number {
-
-        const currImgScale: number = this.calcImgScale( img.width(), img.height(), tile );
-        const newScale: number = tile.transformations.calcCombinedScale( currImgScale );
-
-        if ( false === dryRun ) {
-
-            tile.transformations.scale = newScale;
-
-            img.scale( {
-                x: tile.transformations.scale * ( tile.transformations.flipX ? - 1 : 1 ),
-                y: tile.transformations.scale * ( tile.transformations.flipY ? - 1 : 1 )
-            } );
-
-        }
-
-        return newScale;
-
-    }
-
-    public flipImage ( tile: Tile, img: Konva.Image = tile.getKonvaImage() ): void {
-
-        const flip: boolean = tile.transformations.initialRotation % 180 !== 0;
-
-        if ( flip ) {
-
-            tile.transformations.flipY = ! tile.transformations.flipY;
-
-        } else {
-
-            tile.transformations.flipX = ! tile.transformations.flipX;
-
-        }
-
-        this.applyUserScale( tile, img );
-
-    }
-
+    // public focusTile ( tile: Tile ): void {
+    //
+    //     const boundingBox: [ Konva.Vector2d, Konva.Vector2d ] = tile.getBBPolygon();
+    //
+    //     // Adopt scale to fill nearly entire stage dimensions
+    //     const bbWidth: number = boundingBox[1].x - boundingBox[0].x;
+    //     const bbHeight: number = boundingBox[1].y - boundingBox[0].y;
+    //
+    //     const scaleX: number = this._dimensions.x / bbWidth;
+    //     const scaleY: number = this._dimensions.y / bbHeight;
+    //     const scale: number = Math.min( scaleX, scaleY ) * .85;
+    //
+    //     // Center tile in stage
+    //     const invScale: number = 1 / scale;
+    //
+    //     // Animate scaling / centering
+    //     // #9: Use this for single-shot Tween according to KonvaJS memory leak avoidance tips
+    //     // Ref: https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html
+    //     this.to( {
+    //         scaleX: scale,
+    //         scaleY: scale,
+    //         offsetX: boundingBox[0].x - invScale * ( ( this._dimensions.x - bbWidth * scale ) / 2 ),
+    //         offsetY: boundingBox[0].y - invScale * ( ( this._dimensions.y - bbHeight * scale ) / 2 ),
+    //         duration: .5,
+    //         easing: Konva.Easings.StrongEaseOut
+    //     } );
+    //
+    //     // Shade other tiles
+    //     this.shadeOtherTiles( tile );
+    //
+    //     // #7: Remember currently focused tile
+    //     this._focusedTile = tile;
+    //
+    // }
+
+    // /**
+    //  * Reset focused tile
+    //  *
+    //  * @param animation   Whether to use animation on resetting or not
+    //  */
+    // // public focusTileReset ( animation: boolean = true ): boolean {
+    //
+    //     if ( !! this._focusedTile ) {
+    //
+    //         if ( true === animation ) {
+    //
+    //             // Animate tile reset
+    //             // #9: Use this for single-shot Tween according to KonvaJS memory leak avoidance tips
+    //             // Ref: https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html
+    //             this.to( {
+    //                 scaleX: 1,
+    //                 scaleY: 1,
+    //                 offsetX: 0,
+    //                 offsetY: 0,
+    //                 duration: .5,
+    //                 easing: Konva.Easings.StrongEaseOut
+    //             } );
+    //
+    //         } else {
+    //
+    //             this.scale( { x: 1, y: 1 } );
+    //             this.offset( { x: 0, y: 0 } );
+    //
+    //         }
+    //
+    //         // Reset shading of other tiles
+    //         this.shadeOtherTiles( this._focusedTile, false );
+    //
+    //         this._focusedTile.setKonvaLineLowResStatus();
+    //
+    //         this._focusedTile = undefined;
+    //
+    //         return true;
+    //
+    //     }
+    //
+    //     return false;
+    //
+    // }
+
+    // public shadeOtherTiles ( self: Tile, shade: boolean = true ): void {
+    //
+    //     this.tiles.forEach( tile => {
+    //
+    //         if ( tile !== self ) {
+    //
+    //             // Remove previous shade poly if present
+    //             tile.find( '.shade' ).forEach( shadeObj => {
+    //
+    //                 shadeObj.remove();
+    //                 shadeObj.destroy();
+    //
+    //             } );
+    //
+    //             if ( true === shade ) {
+    //
+    //                 // Have to create a new overlay polygon, otherwise opacity on current poly
+    //                 // conflicts with layering of tiles; and we cannot use 'moveToTop', as this
+    //                 // jeopardizes image order!
+    //                 tile.add( new Konva.Line( {
+    //                     name: 'shade',
+    //                     points: [].concat( ...tile.path.map( entry => [ entry.x, entry.y ] ) ),
+    //                     fillEnabled: true,
+    //                     fill: 'white',
+    //                     opacity: 0.5,
+    //                     closed: true
+    //                 } ) );
+    //
+    //             }
+    //
+    //         }
+    //
+    //     } );
+    //
+    // }
+
+    // public removeTilesHighlight (): void {
+    //
+    //     this.tiles.forEach( tile => {
+    //
+    //         // Remove other highlights if any
+    //         tile.find( '.highlight' ).forEach( shadeObj => {
+    //
+    //             shadeObj.remove();
+    //             shadeObj.destroy();
+    //
+    //         } );
+    //
+    //     } );
+    //
+    // }
+
+    // public highlightTile ( self: Tile ): void {
+    //
+    //     self.add( new Konva.Line( {
+    //         name: 'highlight',
+    //         points: [].concat( ...self.path.map( entry => [ entry.x, entry.y ] ) ),
+    //         fillEnabled: true,
+    //         fill: 'white',
+    //         opacity: 0.5,
+    //         closed: true
+    //     } ) );
+    //
+    // }
+
+    // public applyUserScale ( tile: Tile, img: Konva.Image = tile.getKonvaImage(), dryRun: boolean = false ): number {
+    //
+    //     const currImgScale: number = this.calcImgScale( img.width(), img.height(), tile );
+    //     const newScale: number = tile.transformations.calcCombinedScale( currImgScale );
+    //
+    //     if ( false === dryRun ) {
+    //
+    //         tile.transformations.scale = newScale;
+    //
+    //         img.scale( {
+    //             x: tile.transformations.scale * ( tile.transformations.flipX ? - 1 : 1 ),
+    //             y: tile.transformations.scale * ( tile.transformations.flipY ? - 1 : 1 )
+    //         } );
+    //
+    //     }
+    //
+    //     return newScale;
+    //
+    // }
+    //
+    // public flipImage ( tile: Tile, img: Konva.Image = tile.getKonvaImage() ): void {
+    //
+    //     const flip: boolean = tile.transformations.initialRotation % 180 !== 0;
+    //
+    //     if ( flip ) {
+    //
+    //         tile.transformations.flipY = ! tile.transformations.flipY;
+    //
+    //     } else {
+    //
+    //         tile.transformations.flipX = ! tile.transformations.flipX;
+    //
+    //     }
+    //
+    //     this.applyUserScale( tile, img );
+    //
+    // }
+    //
     public applyUserPosition ( tile: Tile, img: Konva.Image = tile.getKonvaImage() ): void {
 
         tile.transformations.position = {
@@ -751,18 +712,18 @@ export abstract class Design extends Konva.Group {
         img.offset( tile.transformations.center );
 
     }
-
-    public checkPosition ( offsX: number, offsY: number, tile: Tile, imgPath: Array<Konva.Vector2d> ): boolean {
-
-        const imgPos: Konva.Vector2d = {
-            x: tile.transformations.initialPosition.x + offsX,
-            y: tile.transformations.initialPosition.y + offsY
-        };
-
-        // Check whether all tile path points are within rotated/scaled image path <imgPath>
-        return ! !! tile.path.find( tp => ! this.containsPoint( imgPath, tp, imgPos ) );
-
-    }
+    //
+    // public checkPosition ( offsX: number, offsY: number, tile: Tile, imgPath: Array<Konva.Vector2d> ): boolean {
+    //
+    //     const imgPos: Konva.Vector2d = {
+    //         x: tile.transformations.initialPosition.x + offsX,
+    //         y: tile.transformations.initialPosition.y + offsY
+    //     };
+    //
+    //     // Check whether all tile path points are within rotated/scaled image path <imgPath>
+    //     return ! !! tile.path.find( tp => ! this.containsPoint( imgPath, tp, imgPos ) );
+    //
+    // }
 
 
     /**
@@ -787,31 +748,31 @@ export abstract class Design extends Konva.Group {
 
     }
 
-    public containsPoint ( path: Array<Konva.Vector2d>, p: Konva.Vector2d, pathCenter: Konva.Vector2d ): boolean {
-
-        // This path contains point "p"?
-        let inside: boolean = false;
-
-        for ( let i = 0, j = path.length - 1; i < path.length; j = i++ ) {
-
-            const xi = path[ i ].x + pathCenter.x;
-            const yi = path[ i ].y + pathCenter.y;
-            const xj = path[ j ].x + pathCenter.x;
-            const yj = path[ j ].y + pathCenter.y;
-
-            const intersect = ( ( yi > p.y ) !== ( yj > p.y ) ) && ( p.x < ( xj - xi ) * ( p.y - yi ) / ( yj - yi ) + xi );
-
-            if ( intersect ) {
-
-                inside = !inside;
-
-            }
-
-        }
-
-        return inside;
-
-    }
+    // public containsPoint ( path: Array<Konva.Vector2d>, p: Konva.Vector2d, pathCenter: Konva.Vector2d ): boolean {
+    //
+    //     // This path contains point "p"?
+    //     let inside: boolean = false;
+    //
+    //     for ( let i = 0, j = path.length - 1; i < path.length; j = i++ ) {
+    //
+    //         const xi = path[ i ].x + pathCenter.x;
+    //         const yi = path[ i ].y + pathCenter.y;
+    //         const xj = path[ j ].x + pathCenter.x;
+    //         const yj = path[ j ].y + pathCenter.y;
+    //
+    //         const intersect = ( ( yi > p.y ) !== ( yj > p.y ) ) && ( p.x < ( xj - xi ) * ( p.y - yi ) / ( yj - yi ) + xi );
+    //
+    //         if ( intersect ) {
+    //
+    //             inside = !inside;
+    //
+    //         }
+    //
+    //     }
+    //
+    //     return inside;
+    //
+    // }
 
     public getStrokeWidth (): number {
 
@@ -820,7 +781,6 @@ export abstract class Design extends Konva.Group {
         let stroke: number = 7.3;
 
         switch ( true ) {
-
             case ( this.dimensions.x < 480 ):
                 stroke *= 320 / 991;
                 break;
@@ -830,7 +790,6 @@ export abstract class Design extends Konva.Group {
             case ( this.dimensions.x < 991 ):
                 stroke *= 768 / 991;
                 break;
-
         }
 
         return stroke;
@@ -882,9 +841,7 @@ export abstract class Design extends Konva.Group {
 
                 id: tile.tileId,
                 clipFunc: ( ctx: SceneContext ) => {
-
                     tile.renderTile( ctx );
-
                 },
                 perfectDrawEnabled: false,
                 listening: true
@@ -897,23 +854,19 @@ export abstract class Design extends Konva.Group {
             uiImage.tile = tile;
 
             if ( initial ) {
-
                 tile.transformations.initialRotation = uiImage.getRotationDegree();
                 // GH-339: Also add base rotation of tile image (Prints design only)
                 tile.transformations.rotation = uiImage.getRotationDegree() - tile.imageBaseRotation;
                 tile.transformations.flipX = false;
                 tile.transformations.flipY = false;
-
             }
 
             // Needs initialRotation already set
             const currImgScale: number = this.calcImgScale( uiImage.image.width, uiImage.image.height, tile );
 
             if ( initial ) {
-
                 tile.transformations.initialScale = currImgScale;
                 tile.transformations.userScale = 1;
-
             }
 
             // Compute the resulting scale based on current stage dimensions and user scale
@@ -934,14 +887,10 @@ export abstract class Design extends Konva.Group {
             } );
 
             if ( initial || scaleChanged ) {
-
                 this.centerImage( tile, image );
-
             } else {
-
                 image.position( tile.transformations.position );
                 image.offset( tile.transformations.center );
-
             }
 
             // Add the shadow "rect"
@@ -955,7 +904,6 @@ export abstract class Design extends Konva.Group {
             imageClippingGroup.add( image );
 
             tile.addKonvaLine( uiImage.lowResolution, this.getStrokeWidth() );
-
         } );
 
     }
@@ -974,14 +922,10 @@ export abstract class Design extends Konva.Group {
     private scaleTilePath ( scale: number ): void {
 
         this.tiles.forEach( tile => {
-
             tile.path.forEach( ( pathItem, index ) => {
-
                 pathItem.x = tile.cachedPath[ index ].x * scale;
                 pathItem.y = tile.cachedPath[ index ].y * scale;
-
             } );
-
         } );
 
     }
