@@ -1,70 +1,41 @@
-import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { loadScript } from "@paypal/paypal-js";
 import { MessageService } from '../services/message.service';
-import { Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
+import { CheckoutService } from '../services/checkout.service';
+import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
 
 // @todo: Set correct Paypal client id!!
 
 @Component({
     selector: 'app-paypal',
-    template: `
-        <div class="section-block" [style.display]="!isError && !isSuccess ? '' : 'none'">
-            <div class="checkbox-list">
-                <div class="checkbox-group">
-                    <div class="checkbox" [class.checked]="acceptAGB" (click)="acceptAGB=!acceptAGB"><i class="icon icon-check"></i></div>
-                    <div class="label">Ich akzeptiere die <a href="">allgemeinen Geschäftsbedingungen.</a></div>
-                </div>
-                <div class="checkbox-group">
-                    <div class="checkbox" [class.checked]="acceptDSGVO" (click)="acceptDSGVO=!acceptDSGVO"><i class="icon icon-check"></i></div>
-                    <div class="label">Ich habe die <a href="">Datenschutzerklärung</a> gelesen und bin damit einverstanden.</div>
-                </div>
-            </div>
-        </div>
-        <div class="payment-btn" [style.display]="!isError && !isSuccess ? '' : 'none'">
-            <div id="paypal-button-container"></div>
-            <div class="pay-msg">Zahlung erfolgt erst im nächsten Schritt</div>
-        </div>
-        <div class="payment-result success" *ngIf="isSuccess">
-            <div class="result-msg">
-                <i class="icon icon-success"></i>
-                <p class="result-msg">
-                    <b>Super!</b> Danke für deine Bestellung. Dein Paket landet in 6-8 Werktagen in deinem Postfach.
-                </p>
-                <a class="btn cta-btn" (click)="resetPayPalButtons()"><span>Nochmal bestellen?</span></a>
-                <p class="msg">Du möchtest dein Bild nochmal in z.B. einer anderen Größe bestellen? Klick auf den Button und du gelangst wieder zurück zum Editor.</p>
-            </div>
-        </div>
-        <div class="payment-result error" *ngIf="isError">
-            <div class="result-msg">
-                <i class="icon icon-error"></i>
-                <p class="result-msg">
-                    <b>Hoppala!</b> Da ist leider etwas schief gelaufen, bitte versuche es nochmal.
-                </p>
-                <a class="btn cta-btn" (click)="resetPayPalButtons()"><span>Nochmal versuchen</span></a>
-            </div>
-        </div>
-        `
+    templateUrl: './paypal.component.html'
 })
 export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     @Input('images') public images: EventEmitter<number>;
+
     public isError: boolean = false;
     public isSuccess: boolean = false;
 
-    private _acceptAGB: boolean = false;
-    private _acceptDSGVO: boolean = false;
-    private _showErrDlg: boolean = false;
+    private _acceptAGB: boolean = true;
+    private _acceptDSGVO: boolean = true;
     private _imagesLength: number = 0;
+    private _orderCreated: boolean = false;
+    private _showErrDlg: boolean = false;
 
-    // KW token: AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX
+    // SB business account token: AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX
 
     private readonly _paypalClientId: string = environment.PAYPAL_CLIENT_ID;
+    private readonly _paypalCurrency: string = environment.PAYPAL_CURRENCY || 'EUR';
+    private readonly _paypalItemName: string = environment.PAYPAL_ITEM_NAME;
     private _paypalActionBtns: any;
     private _subs: Subscription[] = [];
 
 
-    public constructor ( private _msgSvc: MessageService ) {
+    public constructor ( private _msgSvc: MessageService,
+                         private _checkoutSvc: CheckoutService ) {
     }
 
     public async ngOnInit () {
@@ -72,7 +43,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         this._subs.push( this.images.subscribe( {
             next: value => {
                 this._imagesLength = value;
-                this.canSubmitPayment();
+                this.canSubmitOrder();
             }
         }));
 
@@ -82,7 +53,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
             paypal = await loadScript({
                 "client-id": this._paypalClientId,
                 // "buyer-country": 'DE',      // sandbox only
-                currency: "EUR",
+                currency: this._paypalCurrency,
                 intent: 'capture'
             });
         } catch (error) {
@@ -104,19 +75,60 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                         actions.disable();
                     },
                     onClick: ( data, actions ) => {
-                        this._showErrDlg = !this.canSubmitPayment();
+                        this._showErrDlg = !this.canSubmitOrder();
+                        if (!this._showErrDlg) {
+                            // Create order on server, upload images/metadata
+                            // Return a promise to be able to cancel payment if server upload failed...
+                            return this._checkoutSvc.createOrder().toPromise()
+                                .then( () => {
+                                    this._orderCreated = true;
+                                    return actions.resolve();
+                                })
+                                .catch( err => {
+                                    this._msgSvc.openDialog([
+                                        { text: 'Fehler beim Upload der Bilddaten - bitte versuchen Sie es nochmals!' },
+                                        { text: 'Es wurde noch keine Zahlung durchgeführt!', style: 'font-weight: bold' } ],
+                                        `Fehler ${err}`);
+                                    return actions.reject();
+                                })
+                        }
+                        return of<void>().toPromise();
                     },
                     createOrder: (data, actions) => {
                         return actions.order.create({
-                            purchase_units: [{"amount":{"currency_code":"EUR","value":1}}]
+                            intent: 'capture',
+                            purchase_units: [{
+                                description: `${this._paypalItemName} ${this._checkoutSvc.size}x${this._checkoutSvc.size}`,
+                                amount: {
+                                    currency_code: this._paypalCurrency,
+                                    value: this._checkoutSvc.paypalPrice
+                                }
+                            }]
                         });
                     },
                     onApprove: (data, actions) => {
-                        this.isSuccess = true;
-                        return actions.resolve();
+                        return actions.order.capture().then( ( details: OrderResponseBody ) => {
+                            this._checkoutSvc.doCheckout().subscribe( {
+                                next: val => {
+                                    this.isSuccess = true;
+                                    console.log( val, details );
+                                },
+                                error: err => {
+                                    // If something happens in this step, this is really bad.
+                                    // Order processing could not be triggered on server side, quite unlikely though!
+                                    this.isSuccess = false
+                                    this._msgSvc.openDialog([
+                                            { text: 'Bei der Verarbeitung der Bestellung ist ein Fehler aufgetreten!' },
+                                            { text: 'Kontaktieren Sie bitte den Händler unter Angabe folgender Informationen:' },
+                                            { text: `Payment ID: ${details.id}`, style: 'font-weight: bold' },
+                                            { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }],
+                                        `Fehler ${err}`);
+                                }
+                            });
+                        });
                     },
                     onCancel: (data, actions) => {
-                        console.info( 'transaction cancelled' );
+                        console.info( 'transaction cancelled', data );
                         this.isError = true;
                     },
                     onError: err => {
@@ -153,7 +165,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     public set acceptDSGVO ( value : boolean ) {
         this._acceptDSGVO = value;
-        this.canSubmitPayment();
+        this.canSubmitOrder();
     }
 
     public get acceptAGB () : boolean {
@@ -162,10 +174,10 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     public set acceptAGB ( value : boolean ) {
         this._acceptAGB = value;
-        this.canSubmitPayment();
+        this.canSubmitOrder();
     }
 
-    public canSubmitPayment (msg: boolean = false) {
+    public canSubmitOrder () {
         const result = this.acceptAGB && this.acceptDSGVO && this._imagesLength > 0;
         if (!!this._paypalActionBtns) {
             if (result) {
@@ -184,5 +196,4 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
             this._msgSvc.openDialog( `Akzeptieren Sie bitte die allgemeinen Geschäftsbedingungen und die Datenschutzerklärung!` );
         }
     }
-
 }

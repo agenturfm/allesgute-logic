@@ -1,0 +1,36 @@
+
+<div class="section-block" [style.display]="!isError && !isSuccess ? '' : 'none'">
+    <div class="checkbox-list">
+        <div class="checkbox-group">
+            <div class="checkbox" [class.checked]="acceptAGB" (click)="acceptAGB=!acceptAGB"><i class="icon icon-check"></i></div>
+            <div class="label">Ich akzeptiere die <a href="">allgemeinen Geschäftsbedingungen.</a></div>
+        </div>
+        <div class="checkbox-group">
+            <div class="checkbox" [class.checked]="acceptDSGVO" (click)="acceptDSGVO=!acceptDSGVO"><i class="icon icon-check"></i></div>
+            <div class="label">Ich habe die <a href="">Datenschutzerklärung</a> gelesen und bin damit einverstanden.</div>
+        </div>
+    </div>
+</div>
+<div class="payment-btn" [style.display]="!isError && !isSuccess ? '' : 'none'">
+    <div id="paypal-button-container"></div>
+    <div class="pay-msg">Zahlung erfolgt erst im nächsten Schritt</div>
+</div>
+<div class="payment-result success" *ngIf="isSuccess">
+    <div class="result-msg">
+        <i class="icon icon-success"></i>
+        <p class="result-msg">
+            <b>Super!</b> Danke für deine Bestellung. Dein Paket landet in 6-8 Werktagen in deinem Postfach.
+        </p>
+        <a class="btn cta-btn" (click)="resetPayPalButtons()"><span>Nochmal bestellen?</span></a>
+        <p class="msg">Du möchtest dein Bild nochmal in z.B. einer anderen Größe bestellen? Klick auf den Button und du gelangst wieder zurück zum Editor.</p>
+    </div>
+</div>
+<div class="payment-result error" *ngIf="isError">
+    <div class="result-msg">
+        <i class="icon icon-error"></i>
+        <p class="result-msg">
+            <b>Hoppala!</b> Da ist leider etwas schief gelaufen, bitte versuche es nochmal.
+        </p>
+        <a class="btn cta-btn" (click)="resetPayPalButtons()"><span>Nochmal versuchen</span></a>
+    </div>
+</div>

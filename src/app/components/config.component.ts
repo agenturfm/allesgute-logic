@@ -50,7 +50,9 @@ export class ConfigComponent implements AfterViewInit {
                          private _renderer: Renderer2,
                          private _msgDialog: MessageService,
                          private _checkoutSvc: CheckoutService )
-    {}
+    {
+        this._checkoutSvc.amount = 1;
+    }
 
     public ngAfterViewInit () : void {
         this._renderSvc.init( this._konvaCanvas.nativeElement );
@@ -62,7 +64,8 @@ export class ConfigComponent implements AfterViewInit {
     }
 
     public get canvasPriceFinal () : string {
-        return CanvasPrices.get(this._canvasSize)[1];
+        this._checkoutSvc.price = CanvasPrices.get(this._canvasSize)[1];
+        return this._checkoutSvc.price;
     }
 
     public get canvasSize () : CanvasSize {
@@ -71,6 +74,7 @@ export class ConfigComponent implements AfterViewInit {
 
     public set canvasSize ( value : CanvasSize ) {
         this._canvasSize = value;
+        this._checkoutSvc.size = this._canvasSize;
         this._renderSvc.setSize( this._konvaCanvas.nativeElement.offsetWidth, this._konvaCanvas.nativeElement.offsetHeight );
     }
 
@@ -119,14 +123,15 @@ export class ConfigComponent implements AfterViewInit {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
     }
 
-    public uploadTest () {
-        this._checkoutSvc.size = this._canvasSize;
-        this._checkoutSvc.amount = 1;
-
-        this._checkoutSvc.upload().subscribe( {
-            next: value => console.log( value )
-        });
-    }
+    // public uploadTest () {
+    //     this._checkoutSvc.createOrder().subscribe( {
+    //         next: value => console.log( value ),
+    //         error: err => {
+    //             this._msgDialog.openDialog( `Fehler beim Upload der Bilddaten - bitte versuchen Sie es nochmals! ` +
+    //                 'Es wurde noch keine Zahlung durchgeführt!', `Fehler ${err}`);
+    //         }
+    //     });
+    // }
 
     public shuffleImages () {
         this._renderSvc.shuffle();

@@ -13,19 +13,19 @@ import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 import Konva from 'konva';
 import { environment } from '../../environments/environment';
 import { CanvasSize } from '../components/config.component';
+import { TileTransformOperations } from './design.abstract';
+import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
 
 export enum CheckoutNotificationType {
-
     DONE,
     ERROR,
     PROCESSING_START,
     UPLOADING,
     UPLOADING_META,
     UPLOADING_PAYLOAD
-
 }
 
-export class CheckoutNotificationStatus {
+export class UploadNotificationStatus {
 
     public constructor (
         private readonly _type: CheckoutNotificationType,
@@ -46,7 +46,7 @@ export class CheckoutNotificationStatus {
     }
 }
 
-export class PayloadCheckoutNotificationStatus extends CheckoutNotificationStatus {
+export class PayloadCheckoutNotificationStatus extends UploadNotificationStatus {
 
     public constructor (
         _type: CheckoutNotificationType,
@@ -61,6 +61,15 @@ export class PayloadCheckoutNotificationStatus extends CheckoutNotificationStatu
         return this._index;
     }
 }
+class OrderParams {
+
+    constructor (
+        public readonly orderID: string,
+        public readonly pendingOrderID: string
+    ) {}
+
+}
+
 
 class OrderResponse {
 
@@ -103,6 +112,7 @@ interface PayloadElement {
     path : Array< Konva.Vector2d >;
     image : string;
     meta : PayloadImageMeta;
+    operations : TileTransformOperations;
 }
 
 @Injectable( {
@@ -111,12 +121,14 @@ interface PayloadElement {
 export class CheckoutService {
 
     private readonly _backendURI : string = environment.backendAPI;
-    private readonly _checkoutNotification : EventEmitter< CheckoutNotificationStatus > = new EventEmitter< CheckoutNotificationStatus >( true );
+    private readonly _uploadNotification : EventEmitter< UploadNotificationStatus > = new EventEmitter< UploadNotificationStatus >( true );
 
     private _size: CanvasSize = CanvasSize.sm;
     private _amount: number = 1;
+    private _price: string = '';
     private _sideText : PayloadSideText = null;
     private _processingImage : number = 0;
+    private _paypalOrderResponse: OrderResponseBody;
 
     public constructor (
         private readonly _imageService: ImagesService,
@@ -125,98 +137,123 @@ export class CheckoutService {
         private readonly _httpClient: HttpClient
     ) {}
 
-    public get checkoutNotification (): EventEmitter< CheckoutNotificationStatus > {
-        return this._checkoutNotification;
+    public get uploadNotification (): EventEmitter< UploadNotificationStatus > {
+        return this._uploadNotification;
     }
 
     public set size ( value: CanvasSize ) {
         this._size = value;
     }
 
+    public get size () : CanvasSize {
+        return this._size;
+    }
+
+    public get orderId () : string {
+        return this._rendererService.orderId;
+    }
+
     public set amount ( value: number ) {
         this._amount = value;
+    }
+
+    public get amount () : number {
+        return this._amount;
+    }
+
+    public set price ( value: string ) {
+        this._price = value;
+    }
+
+    public get price () : string {
+        return this._price;
+    }
+
+    public get paypalPrice () : string {
+        return this._price.replace( ',', '.' );
     }
 
     public set sideText ( value: PayloadSideText ) {
         this._sideText = value;
     }
 
-    public getPreviewToken (): Observable< string > {
-
-        return this._rendererService.generatePreview().pipe(
-
-            switchMap( _preview => new Observable< string >( subscriber => {
-                this._httpClient.post< { token : string } | OrderResponse >(
-                    this._backendURI + '/preview/',
-                    { preview: _preview },
-                    {
-                        reportProgress: true,
-                        withCredentials: false,
-                        responseType: 'json',
-                        headers: new HttpHeaders(),
-                        observe: 'events'
-                    }
-                ).pipe(
-                    retry( 5 )
-                ).subscribe( value => {
-
-                    if ( value.type === HttpEventType.UploadProgress ) {
-                        this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.UPLOADING, value.loaded, value.total ) );
-                    } else if ( value.type === HttpEventType.Response ) {
-                        this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.DONE ) );
-
-                        if ( !! value.body && !( value.body instanceof OrderResponse ) && !! value.body.token  ) {
-                            subscriber.next( value.body.token );
-                        } else {
-                            // Must be a YomoResponse type
-                            subscriber.error( ( value.body as OrderResponse ).reason );
-                        }
-
-                        subscriber.complete();
-                    }
-
-                }, err => {
-
-                    if ( isDevMode() ) {
-                        console.warn( 'Uploading error', err );
-                    }
-
-                    subscriber.error( err );
-                    subscriber.complete();
-
-                } );
-
-            } ) )
-
-        );
-
-
+    public set paypalOrderResponse ( value : OrderResponseBody ) {
+        this._paypalOrderResponse = value;
     }
 
-    public upload (): Observable< string > {
+// public getPreviewToken (): Observable< string > {
+    //
+    //     return this._rendererService.generatePreview().pipe(
+    //
+    //         switchMap( _preview => new Observable< string >( subscriber => {
+    //             this._httpClient.post< { token : string } | OrderResponse >(
+    //                 this._backendURI + '/preview/',
+    //                 { preview: _preview },
+    //                 {
+    //                     reportProgress: true,
+    //                     withCredentials: false,
+    //                     responseType: 'json',
+    //                     headers: new HttpHeaders(),
+    //                     observe: 'events'
+    //                 }
+    //             ).pipe(
+    //                 retry( 5 )
+    //             ).subscribe( value => {
+    //
+    //                 if ( value.type === HttpEventType.UploadProgress ) {
+    //                     this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.UPLOADING, value.loaded, value.total ) );
+    //                 } else if ( value.type === HttpEventType.Response ) {
+    //                     this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.DONE ) );
+    //
+    //                     if ( !! value.body && !( value.body instanceof OrderResponse ) && !! value.body.token  ) {
+    //                         subscriber.next( value.body.token );
+    //                     } else {
+    //                         // Must be a YomoResponse type
+    //                         subscriber.error( ( value.body as OrderResponse ).reason );
+    //                     }
+    //
+    //                     subscriber.complete();
+    //                 }
+    //
+    //             }, err => {
+    //
+    //                 if ( isDevMode() ) {
+    //                     console.warn( 'Uploading error', err );
+    //                 }
+    //
+    //                 subscriber.error( err );
+    //                 subscriber.complete();
+    //
+    //             } );
+    //
+    //         } ) )
+    //
+    //     );
+    //
+    //
+    // }
+
+    public createOrder (): Observable< string > {
         // Reset the processing counter
         this._processingImage = 0;
 
         // Signal "Processing started"
-        this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.PROCESSING_START, this._processingImage, this._imageService.images.length ) );
+        this._uploadNotification.emit( new UploadNotificationStatus( CheckoutNotificationType.PROCESSING_START, this._processingImage, this._imageService.images.length ) );
 
         return this._rendererService.generatePreview( this._rendererService.getCanvasImageData() ).pipe(
 
-            switchMap( _prevImg => this.uploadNewMeta( _prevImg ) ),
+            switchMap( _prevImg => this._createOrder( _prevImg ) ),
 
-            switchMap( _url => this.uploadImages( _url ) ),
-
-            switchMap( _url => {
-                // Implementation without "product" parameter
-                const url: string = `${ environment.shopBaseURL }/frontend/yomo-checkout?yomo-id=${ _url }&qty=${ this._amount }`;
-
-                return of( url );
-            } )
-
+            switchMap( _url => this._uploadOrderImages( _url ) )
         );
     }
 
-    private getPayloadElement ( image: UIImage ): Observable< PayloadElement > {
+    public doCheckout (): Observable< string > {
+
+        return this._doCheckout();
+    }
+
+    private _getPayloadElement ( image: UIImage ): Observable< PayloadElement > {
 
         return new Observable< PayloadElement >( subscriber => {
 
@@ -227,7 +264,8 @@ export class CheckoutService {
                 meta: new PayloadImageMeta(
                     konvaImage.width(),
                     konvaImage.height()
-                )
+                ),
+                operations: image.tile.transformations
             };
 
             this._workerService.doWork< File, string >( InputMessage.getInstance( Methods.FILE_READER_DATA_URL, image.handle ) ).pipe(
@@ -247,11 +285,58 @@ export class CheckoutService {
 
     }
 
-    private uploadNewMeta ( preview: string ): Observable< string > {
+    private _doCheckout (): Observable< string > {
+
+        if ( isDevMode() ) {
+            console.info(`Performing checkout of order "${ this.orderId }"`);
+        }
+
+        return new Observable< string >( subscriber => {
+
+            this._httpClient.post< OrderResponse >(
+                this._backendURI + '/checkout',
+                new OrderParams( '123456', this.orderId),
+                {
+                    reportProgress: false,
+                    withCredentials: false,
+                    responseType: 'json',
+                    headers: new HttpHeaders()
+                }
+            ).pipe(
+                retry( 5 )
+
+            ).subscribe( value => {
+
+                console.log( 'checked out', value );
+                if ( value.response ) {
+
+                    if ( !! value.pendingOrderID ) {
+                        subscriber.next( value.pendingOrderID );
+                    } else {
+                        subscriber.error( value.reason );
+                    }
+                    subscriber.complete();
+                }
+
+            }, err => {
+
+                if ( isDevMode() ) {
+                    console.warn( 'Checkout error', err );
+                }
+
+                subscriber.error( err );
+                subscriber.complete();
+
+            } );
+
+        } );
+    }
+
+    private _createOrder ( preview: string ): Observable< string > {
 
         if ( isDevMode() ) {
             console.info(
-                `Starting upload of order "${ this._rendererService.orderId }",
+                `Starting upload of order "${ this.orderId }",
                 size ${ this._size }, amount "${ this._amount }" and canvas text "${ this._sideText }"`
             );
         }
@@ -261,7 +346,7 @@ export class CheckoutService {
             this._httpClient.post< OrderResponse >(
                 this._backendURI + '/new',
                 {
-                    orderID: this._rendererService.orderId,
+                    orderID: this.orderId,
                     options: {
                         size: this._size,
                         amount: this._amount,
@@ -283,11 +368,11 @@ export class CheckoutService {
 
                 if ( value.type === HttpEventType.UploadProgress ) {
 
-                    this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.UPLOADING_META, value.loaded, value.total ) );
+                    this._uploadNotification.emit( new UploadNotificationStatus( CheckoutNotificationType.UPLOADING_META, value.loaded, value.total ) );
 
                 } else if ( value.type === HttpEventType.Response ) {
 
-                    this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.DONE ) );
+                    this._uploadNotification.emit( new UploadNotificationStatus( CheckoutNotificationType.DONE ) );
 
                     if ( !! value.body && !! value.body.response && !! value.body.pendingOrderID ) {
                         subscriber.next( value.body.pendingOrderID );
@@ -309,11 +394,9 @@ export class CheckoutService {
             } );
 
         } );
-
-
     }
 
-    private uploadImages ( yomoID: string ): Observable< string > {
+    private _uploadOrderImages ( orderID: string ): Observable< string > {
 
         // Upload all images (sequentially)
         const images: Array< Observable< string > > = new Array< Observable< string > >();
@@ -324,7 +407,7 @@ export class CheckoutService {
         this._imageService.images.forEach( image => {
             // Check if the tile is part of the current design
             if ( image.tile && this._rendererService.activeDesign.tiles.indexOf( image.tile ) > -1 ) {
-                images.push( this.uploadImage( yomoID, image, index++ ) );
+                images.push( this._uploadOrderImage( orderID, image, index++ ) );
             }
         } );
 
@@ -334,13 +417,13 @@ export class CheckoutService {
 
     }
 
-    private uploadImage ( yomoID: string, image: UIImage, index: number ): Observable< string > {
+    private _uploadOrderImage ( orderID: string, image: UIImage, index: number ): Observable< string > {
 
         return new Observable< string >( subscriber => {
 
-            this.getPayloadElement( image ).pipe(
+            this._getPayloadElement( image ).pipe(
                 switchMap( payload => this._httpClient.post<OrderResponse>(
-                    `${ this._backendURI }/payload/${ index }/${ yomoID }`,
+                    `${ this._backendURI }/payload/${ index }/${ orderID }`,
                     payload,
                     {
                         reportProgress: true,
@@ -355,33 +438,24 @@ export class CheckoutService {
             ).subscribe( value => {
 
                 if ( value.type === HttpEventType.UploadProgress ) {
-
-                    this._checkoutNotification.emit( new PayloadCheckoutNotificationStatus( CheckoutNotificationType.UPLOADING_PAYLOAD, index, value.loaded, value.total ) );
+                    this._uploadNotification.emit( new PayloadCheckoutNotificationStatus( CheckoutNotificationType.UPLOADING_PAYLOAD, index, value.loaded, value.total ) );
 
                 } else if ( value.type === HttpEventType.Response ) {
 
-                    this._checkoutNotification.emit( new CheckoutNotificationStatus( CheckoutNotificationType.DONE ) );
+                    this._uploadNotification.emit( new UploadNotificationStatus( CheckoutNotificationType.DONE ) );
 
                     if ( !!value.body && !!value.body.response && !!value.body.pendingOrderID ) {
-
                         subscriber.next( value.body.pendingOrderID );
-
                     } else {
-
                         subscriber.error( value.body.reason );
-
                     }
-
                     subscriber.complete();
-
                 }
 
             }, err => {
 
                 if ( isDevMode() ) {
-
                     console.warn( 'Uploading payload error', err );
-
                 }
 
                 subscriber.error( err );
