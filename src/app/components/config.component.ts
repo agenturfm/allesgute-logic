@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../services/images.service';
 import { MessageService } from '../services/message.service';
 import { CheckoutService } from '../services/checkout.service';
+import { environment } from '../../environments/environment';
 
 export enum CanvasSize {
     sm = 40,
@@ -51,7 +52,17 @@ export class ConfigComponent implements AfterViewInit {
                          private _msgDialog: MessageService,
                          private _checkoutSvc: CheckoutService )
     {
+        // Fixed amount of one
         this._checkoutSvc.amount = 1;
+
+        // Setup prices from environment
+        const prices = environment.CANVAS_PRICES;
+        CanvasPrices.set( CanvasSize.sm, prices.sm );
+        CanvasPrices.set( CanvasSize.md, prices.md );
+        CanvasPrices.set( CanvasSize.lg, prices.lg );
+        if (isDevMode()) {
+            console.log( 'Using prices from config', prices );
+        }
     }
 
     public ngAfterViewInit () : void {
@@ -122,16 +133,6 @@ export class ConfigComponent implements AfterViewInit {
     public get progress (): number {
         return !!this.working ? ( this._imagesService.processingCurrent / this._imagesService.processingTotal ) * 100 : 0;
     }
-
-    // public uploadTest () {
-    //     this._checkoutSvc.createOrder().subscribe( {
-    //         next: value => console.log( value ),
-    //         error: err => {
-    //             this._msgDialog.openDialog( `Fehler beim Upload der Bilddaten - bitte versuchen Sie es nochmals! ` +
-    //                 'Es wurde noch keine Zahlung durchgeführt!', `Fehler ${err}`);
-    //         }
-    //     });
-    // }
 
     public shuffleImages () {
         this._renderSvc.shuffle();
