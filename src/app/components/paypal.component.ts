@@ -6,7 +6,44 @@ import { of, Subscription } from 'rxjs';
 import { CheckoutService } from '../services/checkout.service';
 import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
 
-// @todo: Set correct Paypal client id!!
+//
+// IMPORTANT!
+// Keep these classes in sync with backend!
+//
+export class PaypalPayerInfo {
+    countryCode: string = '';
+    email: string = '';
+    givenName: string = '';
+    surname: string = '';
+    payerId: string = '';
+}
+
+export class PaypalDeliveryInfo {
+    itemPaymentId: string = '';
+    itemDescription: string = '';
+    itemAmount: string = '';
+    itemCurrency: string = '';
+    itemValue: string = '';
+    fullName: string = '';
+    addressLine1: string = '';
+    addressLine2: string = '';
+    city: string = '';        // admin_area_2
+    zipCode: string = '';
+    countryCode: string = '';
+}
+
+export class PaypalMetaInfo {
+    transaction: string = '';
+    orderID: string = '';
+    orderDate: string = '';
+    payer: PaypalPayerInfo = new PaypalPayerInfo();
+    delivery: PaypalDeliveryInfo = new PaypalDeliveryInfo();
+}
+
+interface PaypalPurchaseUnitAmount {
+    currency_code: string;
+    value: string;
+}
 
 @Component({
     selector: 'app-paypal',
@@ -57,7 +94,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                 intent: 'capture'
             });
         } catch (error) {
-            this._msgSvc.openDialog( 'Oops ein Fehler ist aufgetreten - PayPal konnte nicht geladen werden!');
+            this._msgSvc.openDialog( 'Oops ein Fehler ist aufgetreten - PayPal konnte nicht geladen werden! Lade bitte die Seite neu!');
             console.error("failed to load the PayPal JS SDK script", error);
         }
 
@@ -70,10 +107,12 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                         layout: 'vertical',
                         label: 'paypal',
                     },
+
                     onInit: ( data, actions ) => {
                         this._paypalActionBtns = actions;
                         actions.disable();
                     },
+
                     onClick: ( data, actions ) => {
                         this._showErrDlg = !this.canSubmitOrder();
                         if (!this._showErrDlg) {
@@ -90,13 +129,23 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                                         { text: 'Es wurde noch keine Zahlung durchgeführt!', style: 'font-weight: bold' } ],
                                         `Fehler ${err}`);
 
-                                    // Ignore errors?
-                                    this._checkoutSvc.cancelOrder().subscribe();
+                                    this._checkoutSvc.cancelOrder().subscribe( {
+                                        error: err1 => {
+                                            // in error case, let the stale data reside on server
+                                            if (isDevMode()) {
+                                                console.log( 'Could not remove order on server; error ', err1 );
+                                            }
+                                        }
+                                    });
+                                    // create new order ID to let customer continue
+                                    this.createNewOrder();
+
                                     return actions.reject();
                                 })
                         }
                         return of<void>().toPromise();
                     },
+
                     createOrder: (data, actions) => {
                         return actions.order.create({
                             intent: 'capture',
@@ -109,20 +158,36 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                             }]
                         });
                     },
+
                     onApprove: (data, actions) => {
                         return actions.order.capture().then( ( details: OrderResponseBody ) => {
-                            this._checkoutSvc.doCheckout().subscribe( {
-                                next: val => {
-                                    this.isSuccess = true;
-                                    if (isDevMode()) {
-                                        console.log( val, details );
-                                    }
+                            if (isDevMode()) {
+                                console.log( details );
+                            }
+                            // Provide paypal details to server (update order meta data)
+                            this.updateOrderDetails( details ).subscribe( {
+                                next: () => {
+                                    // continue with checkout
+                                    this._checkoutSvc.doCheckout().subscribe( {
+                                        next: val => {
+                                            this.isSuccess = true;
+                                        },
+                                        error: err => {
+                                            // If something happens in this step, this is really bad - quite unlikely though!
+                                            // Order processing could not be triggered on server side
+                                            this.isSuccess = false
+                                            this.showOrderFatal( err, [
+                                                { text: `Step: Checkout`, style: 'font-weight: bold' },
+                                                { text: `Payment ID: ${details.id}`, style: 'font-weight: bold' },
+                                                { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }
+                                            ])
+                                        }
+                                    });
                                 },
-                                error: err => {
-                                    // If something happens in this step, this is really bad - quite unlikely though!
-                                    // Order processing could not be triggered on server side
-                                    this.isSuccess = false
-                                    this.showOrderFatal( err, [
+                                error: () => {
+                                    // That's really bad. Already paid but no meta info could be delivered to server
+                                    this.showOrderFatal( '', [
+                                        { text: `Step: Update order details`, style: 'font-weight: bold' },
                                         { text: `Payment ID: ${details.id}`, style: 'font-weight: bold' },
                                         { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }
                                     ])
@@ -130,6 +195,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                             });
                         });
                     },
+
                     onCancel: (data, actions) => {
                         if (isDevMode()) {
                             console.info( 'transaction cancelled', data );
@@ -137,18 +203,27 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                         this.isError = true;
                         this._checkoutSvc.cancelOrder().subscribe( {
                             error: err =>
-                                this.showOrderFatal( err, [{ text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }])
+                                this.showOrderFatal( err, [
+                                    { text: `Step: Paypal cancellation handling`, style: 'font-weight: bold' },
+                                    { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }])
                         });
                     },
+
                     onError: err => {
                         if (isDevMode()) {
                             console.log( err );
                         }
                         this.isError = true;
-                        this._checkoutSvc.cancelOrder();
+                        this._checkoutSvc.cancelOrder().subscribe( {
+                            error: err =>
+                                this.showOrderFatal( err, [
+                                    { text: `Step: Paypal error handling`, style: 'font-weight: bold' },
+                                    { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }])
+                        });
                     }
                 }).render("#paypal-button-container");
             } catch (error) {
+                this._msgSvc.openDialog( 'Oops ein Fehler ist aufgetreten - PayPal konnte nicht geladen werden! Lade bitte die Seite neu!');
                 console.error("failed to render the PayPal Buttons", error);
             }
         }
@@ -230,6 +305,37 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
             }
         }
         return result;
+    }
+
+    private updateOrderDetails ( details: OrderResponseBody ) {
+
+        const d = new PaypalMetaInfo();
+        d.transaction = details.id || '<undefined>';
+        d.orderID = this._checkoutSvc.orderId;
+        d.orderDate = details.update_time || '<undefined>';
+
+        d.payer.payerId = details.payer.payer_id || '<undefined>';
+        d.payer.givenName = details.payer.name.given_name || '<undefined>';
+        d.payer.surname = details.payer.name.surname || '<undefined>';
+        d.payer.email = details.payer.email_address || '<undefined>';
+        d.payer.countryCode = details.payer.address.country_code || '<undefined>';
+
+        // There shall only be exactly one item present!
+        const u = details.purchase_units[0];
+        d.delivery.itemPaymentId = <string> u.payments.captures[0].id || '<undefined>';
+        d.delivery.itemDescription = u.description || '<undefined>';
+        d.delivery.itemAmount = '1';
+        d.delivery.itemCurrency = (<PaypalPurchaseUnitAmount> u.payments.captures[0].amount).currency_code || '<undefined>';
+        d.delivery.itemValue = (<PaypalPurchaseUnitAmount> u.payments.captures[0].amount).value || '<undefined>';
+
+        d.delivery.fullName = u.shipping.name.full_name || '<undefined>';
+        d.delivery.addressLine1 = u.shipping.address.address_line_1 || '<undefined>';
+        d.delivery.addressLine2 = u.shipping.address.address_line_2 || '<undefined>';
+        d.delivery.city = u.shipping.address.admin_area_1 || u.shipping.address.admin_area_2 || '<undefined>';
+        d.delivery.countryCode = u.shipping.address.country_code || '<undefined>';
+        d.delivery.zipCode = u.shipping.address.postal_code || '<undefined>';
+
+        return this._checkoutSvc.updateOrder( d );
     }
 
     private showSubmitErrorDlg () {

@@ -15,6 +15,7 @@ import { environment } from '../../environments/environment';
 import { CanvasSize } from '../components/config.component';
 import { TileTransformOperations } from './design.abstract';
 import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
+import { PaypalMetaInfo } from '../components/paypal.component';
 
 export enum CheckoutNotificationType {
     DONE,
@@ -250,6 +251,10 @@ export class CheckoutService {
         return this._doCheckout();
     }
 
+    public updateOrder ( details: PaypalMetaInfo, orderId: string = this.orderId ): Observable< string > {
+        return this._updateOrder( details, orderId );
+    }
+
     public cancelOrder ( orderId: string = this.orderId ): Observable< string > {
         return this._cancelOrder( orderId );
     }
@@ -336,8 +341,7 @@ export class CheckoutService {
 
         if ( isDevMode() ) {
             console.info(
-                `Starting upload of order "${ this.orderId }",
-                size ${ this._size }, amount "${ this._amount }" and canvas text "${ this._sideText }"`
+                `Starting upload of order "${ this.orderId }", size ${ this._size }, amount "${ this._amount }" and canvas text "${ this._sideText }"`
             );
         }
 
@@ -465,6 +469,49 @@ export class CheckoutService {
 
         } );
 
+    }
+
+    private _updateOrder ( details: PaypalMetaInfo, orderId: string ): Observable< string > {
+
+        if ( isDevMode() ) {
+            console.info( `Updating order details for order "${ orderId }"`);
+        }
+
+        return new Observable< string >( subscriber => {
+
+            this._httpClient.post< OrderResponse >(
+                this._backendURI + '/update',
+                details,
+                {
+                    reportProgress: false,
+                    withCredentials: false,
+                    responseType: 'json',
+                    headers: new HttpHeaders()
+                }
+            ).pipe(
+                retry( 5 )
+
+            ).subscribe( value => {
+
+                if ( ! value.response ) {
+                    subscriber.next( orderId );
+                } else {
+                    subscriber.error( value.reason );
+                }
+                subscriber.complete();
+
+            }, err => {
+
+                if ( isDevMode() ) {
+                    console.warn( 'Order details update error', err );
+                }
+
+                subscriber.error( err );
+                subscriber.complete();
+
+            } );
+
+        } );
     }
 
     private _cancelOrder ( orderId: string ): Observable< string > {
