@@ -34,7 +34,7 @@ export class RendererService {
 
     public init ( container: HTMLDivElement ) {
 
-        this._orderId = v4();
+        this.createNewOrderId();
 
         this._containerElement = container;
         this._stage = new Konva.Stage( { draggable: false, container: this._containerElement.id } );
@@ -46,10 +46,6 @@ export class RendererService {
 
     public get containerElement (): HTMLDivElement {
         return this._containerElement;
-    }
-
-    public get mainLayer (): Konva.Layer {
-        return this._mainLayer;
     }
 
     public get width (): number {
@@ -70,6 +66,10 @@ export class RendererService {
 
     public get activeDesign () : Design {
         return this._activeRendererDesign;
+    }
+
+    public createNewOrderId () {
+        this._orderId = v4();
     }
 
     public shuffle (): void {

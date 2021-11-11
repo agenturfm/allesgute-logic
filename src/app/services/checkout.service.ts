@@ -65,7 +65,6 @@ class OrderParams {
 
     constructor (
         public readonly orderID: string,
-        public readonly pendingOrderID: string
     ) {}
 
 }
@@ -128,7 +127,6 @@ export class CheckoutService {
     private _price: string = '';
     private _sideText : PayloadSideText = null;
     private _processingImage : number = 0;
-    private _paypalOrderResponse: OrderResponseBody;
 
     public constructor (
         private readonly _imageService: ImagesService,
@@ -175,10 +173,6 @@ export class CheckoutService {
 
     public set sideText ( value: PayloadSideText ) {
         this._sideText = value;
-    }
-
-    public set paypalOrderResponse ( value : OrderResponseBody ) {
-        this._paypalOrderResponse = value;
     }
 
 // public getPreviewToken (): Observable< string > {
@@ -233,6 +227,10 @@ export class CheckoutService {
     //
     // }
 
+    public createNewOrderId () {
+        this._rendererService.createNewOrderId();
+    }
+
     public createOrder (): Observable< string > {
         // Reset the processing counter
         this._processingImage = 0;
@@ -249,8 +247,11 @@ export class CheckoutService {
     }
 
     public doCheckout (): Observable< string > {
-
         return this._doCheckout();
+    }
+
+    public cancelOrder ( orderId: string = this.orderId ): Observable< string > {
+        return this._cancelOrder( orderId );
     }
 
     private _getPayloadElement ( image: UIImage ): Observable< PayloadElement > {
@@ -295,7 +296,7 @@ export class CheckoutService {
 
             this._httpClient.post< OrderResponse >(
                 this._backendURI + '/checkout',
-                new OrderParams( '123456', this.orderId),
+                new OrderParams( this.orderId ),
                 {
                     reportProgress: false,
                     withCredentials: false,
@@ -307,7 +308,6 @@ export class CheckoutService {
 
             ).subscribe( value => {
 
-                console.log( 'checked out', value );
                 if ( value.response ) {
 
                     if ( !! value.pendingOrderID ) {
@@ -465,6 +465,49 @@ export class CheckoutService {
 
         } );
 
+    }
+
+    private _cancelOrder ( orderId: string ): Observable< string > {
+
+        if ( isDevMode() ) {
+            console.info( `Cancelling order "${ orderId }"`);
+        }
+
+        return new Observable< string >( subscriber => {
+
+            this._httpClient.post< OrderResponse >(
+                this._backendURI + '/cancel',
+                new OrderParams( orderId ),
+                {
+                    reportProgress: false,
+                    withCredentials: false,
+                    responseType: 'json',
+                    headers: new HttpHeaders()
+                }
+            ).pipe(
+                retry( 5 )
+
+            ).subscribe( value => {
+
+                if ( ! value.response ) {
+                    subscriber.next( orderId );
+                } else {
+                    subscriber.error( value.reason );
+                }
+                subscriber.complete();
+
+            }, err => {
+
+                if ( isDevMode() ) {
+                    console.warn( 'Order cancellation error', err );
+                }
+
+                subscriber.error( err );
+                subscriber.complete();
+
+            } );
+
+        } );
     }
 
 }
