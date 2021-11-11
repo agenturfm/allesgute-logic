@@ -4,13 +4,21 @@
 
 export const environment = {
     production: false,
+    appVersion: require('../../package.json').version + '-dev',
     PAYPAL_CLIENT_ID: 'AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX',         // Sandbox
     PAYPAL_CURRENCY: 'EUR',
+    // Suffixed by size '<n>x<n>', e.g. '40x40'
     PAYPAL_ITEM_NAME: 'Fotokanvas',
-    appVersion: require('../../package.json').version + '-dev',
-    backendAPI: 'http://localhost:3000',             /* No tailing "/" allowed!! */
-    // backendAPI: 'https://api.printyomo.com',       /* No tailing "/" allowed!! */
-    shopBaseURL: 'https://shop.printyomo.com'        /* No tailing "/" allowed!! */
+    // Prices for different canvas sizes
+    // First price is 'statt', 2nd is real price sent to paypal
+    CANVAS_PRICES: {
+        sm: [ '54,90', '39,90' ],
+        md: [ '74,90', '59,90' ],
+        lg: [ '84,90', '69,90' ]
+    },
+    // No tailing "/" allowed!!
+    backendAPI: 'http://localhost:3000',
+    shopBaseURL: 'https://shop.printyomo.com'
 };
 
 /*
