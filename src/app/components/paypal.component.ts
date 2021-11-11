@@ -1,7 +1,7 @@
-import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterViewChecked, Component, EventEmitter, Input, isDevMode, OnDestroy, OnInit, Output } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { loadScript } from "@paypal/paypal-js";
-import { MessageService } from '../services/message.service';
+import { MessageService, MessageText } from '../services/message.service';
 import { of, Subscription } from 'rxjs';
 import { CheckoutService } from '../services/checkout.service';
 import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
@@ -16,8 +16,8 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     @Input('images') public images: EventEmitter<number>;
 
-    public isError: boolean = false;
-    public isSuccess: boolean = false;
+    private _isError: boolean = false;
+    private _isSuccess: boolean = false;
 
     private _acceptAGB: boolean = true;
     private _acceptDSGVO: boolean = true;
@@ -86,9 +86,12 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                                 })
                                 .catch( err => {
                                     this._msgSvc.openDialog([
-                                        { text: 'Fehler beim Upload der Bilddaten - bitte versuchen Sie es nochmals!' },
+                                        { text: 'Fehler beim Upload der Bilddaten - bitte versuche es nochmals!' },
                                         { text: 'Es wurde noch keine Zahlung durchgeführt!', style: 'font-weight: bold' } ],
                                         `Fehler ${err}`);
+
+                                    // Ignore errors?
+                                    this._checkoutSvc.cancelOrder().subscribe();
                                     return actions.reject();
                                 })
                         }
@@ -111,29 +114,38 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                             this._checkoutSvc.doCheckout().subscribe( {
                                 next: val => {
                                     this.isSuccess = true;
-                                    console.log( val, details );
+                                    if (isDevMode()) {
+                                        console.log( val, details );
+                                    }
                                 },
                                 error: err => {
-                                    // If something happens in this step, this is really bad.
-                                    // Order processing could not be triggered on server side, quite unlikely though!
+                                    // If something happens in this step, this is really bad - quite unlikely though!
+                                    // Order processing could not be triggered on server side
                                     this.isSuccess = false
-                                    this._msgSvc.openDialog([
-                                            { text: 'Bei der Verarbeitung der Bestellung ist ein Fehler aufgetreten!' },
-                                            { text: 'Kontaktieren Sie bitte den Händler unter Angabe folgender Informationen:' },
-                                            { text: `Payment ID: ${details.id}`, style: 'font-weight: bold' },
-                                            { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }],
-                                        `Fehler ${err}`);
+                                    this.showOrderFatal( err, [
+                                        { text: `Payment ID: ${details.id}`, style: 'font-weight: bold' },
+                                        { text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }
+                                    ])
                                 }
                             });
                         });
                     },
                     onCancel: (data, actions) => {
-                        console.info( 'transaction cancelled', data );
+                        if (isDevMode()) {
+                            console.info( 'transaction cancelled', data );
+                        }
                         this.isError = true;
+                        this._checkoutSvc.cancelOrder().subscribe( {
+                            error: err =>
+                                this.showOrderFatal( err, [{ text: `Order ID: ${this._checkoutSvc.orderId}`, style: 'font-weight: bold' }])
+                        });
                     },
                     onError: err => {
+                        if (isDevMode()) {
+                            console.log( err );
+                        }
                         this.isError = true;
-                        console.log( err );
+                        this._checkoutSvc.cancelOrder();
                     }
                 }).render("#paypal-button-container");
             } catch (error) {
@@ -157,6 +169,37 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
     public resetPayPalButtons() {
         this.isError = false;
         this.isSuccess = false;
+    }
+
+    public createNewOrder() {
+        this.resetPayPalButtons();
+
+        this._checkoutSvc.createNewOrderId();
+        if (isDevMode()) {
+            console.log( `Assigned new order ID ${this._checkoutSvc.orderId}` );
+        }
+    }
+
+    public get isSuccess () : boolean {
+        return this._isSuccess;
+    }
+
+    public set isSuccess ( value : boolean ) {
+        this._isSuccess = value;
+        if ( value ) {
+            this._isError = false;
+        }
+    }
+
+    public get isError () : boolean {
+        return this._isError;
+    }
+
+    public set isError ( value : boolean ) {
+        this._isError = value;
+        if ( value ) {
+            this._isSuccess = false;
+        }
     }
 
     public get acceptDSGVO () : boolean {
@@ -193,7 +236,14 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         if (this._imagesLength == 0) {
             this._msgSvc.openDialog( 'Es wurden keine Fotos ausgewählt!' );
         } else if (!this.acceptAGB || !this.acceptDSGVO ) {
-            this._msgSvc.openDialog( `Akzeptieren Sie bitte die allgemeinen Geschäftsbedingungen und die Datenschutzerklärung!` );
+            this._msgSvc.openDialog( `Akzeptiere bitte die allgemeinen Geschäftsbedingungen und die Datenschutzerklärung!` );
         }
+    }
+
+    private showOrderFatal (error: any, text: MessageText[] )  {
+        this._msgSvc.openDialog( [
+                { text: 'Bei der Verarbeitung der Bestellung ist ein Fehler aufgetreten!' },
+                { text: 'Kontaktiere bitte den Händler unter Angabe folgender Informationen:' }
+            ].concat( text ), `Fehler ${error}`);
     }
 }
