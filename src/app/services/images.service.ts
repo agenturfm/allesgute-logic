@@ -8,7 +8,6 @@ import { WorkerService } from './worker.service';
 import { InputMessage, Methods } from '../../worker/shared/message.class';
 import { mergeMap, switchMap, tap } from 'rxjs/operators';
 import { Tile } from './design.abstract';
-import { AppService } from './app.service';
 import { v4 } from 'uuid';
 
 export const IMAGES_SERVICE_IMAGES_TOTAL_ALLOWED: number = 32;
@@ -117,8 +116,7 @@ export class ImagesService {
     public constructor (
         @Inject( 'uiImageWidth' ) @Optional() private readonly _uiImageWidth: number = 800,
         @Inject( 'uiImageQuality' ) @Optional() private readonly _uiImageQuality: number = 0.5,
-        private readonly _workerService: WorkerService,
-        private readonly _appService: AppService
+        private readonly _workerService: WorkerService
     ) {
     }
 
