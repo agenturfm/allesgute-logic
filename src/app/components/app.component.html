@@ -444,5 +444,5 @@
 
 <!--SITE FOOTER-->
 <div id="site-footer">
-    <div>App version: {{appVersion}}</div>
+    <div *ngIf="isDevMode">App version: {{appVersion}}</div>
 </div>

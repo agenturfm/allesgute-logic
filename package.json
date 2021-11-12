@@ -3,15 +3,14 @@
     "version": "0.2.0",
     "scripts": {
         "ng": "ng",
-        "start": "run-p build-dev-worker serve",
-        "start-prod": "run-p build-prod-worker serve-prod",
+        "start": "run-p build-dev-worker int:serve",
+        "start-prod": "run-p build-prod-worker int:serve-prod",
         "build": "ng build --configuration development",
         "build-prod": "ng build --configuration production",
-        "serve": "ng serve -c development",
-        "serve-prod": "ng serve -c production",
-        "test": "ng test",
         "build-prod-worker": "ng run allesgute:build-worker",
-        "build-dev-worker": "ng run allesgute:dev-worker"
+        "build-dev-worker": "ng run allesgute:dev-worker",
+        "int:serve": "ng serve -c development",
+        "int:serve-prod": "ng serve -c production"
     },
     "private": true,
     "dependencies": {
@@ -49,12 +48,6 @@
         "gulp-terser": "^2.1.0",
         "gulp-rename": "^2.0.0",
         "gulp-clean-css": "^4.3.0",
-        "jasmine-core": "~3.8.0",
-        "karma": "~6.3.0",
-        "karma-chrome-launcher": "~3.1.0",
-        "karma-coverage": "~2.0.3",
-        "karma-jasmine": "~4.0.0",
-        "karma-jasmine-html-reporter": "~1.7.0",
         "npm-run-all": "~4.1.5",
         "typescript": "~4.3.5",
         "wait-on": "~6.0.0",

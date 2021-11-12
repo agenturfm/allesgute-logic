@@ -56,8 +56,8 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
     private _isError: boolean = false;
     private _isSuccess: boolean = false;
 
-    private _acceptAGB: boolean = true;
-    private _acceptDSGVO: boolean = true;
+    private _acceptAGB: boolean = false;
+    private _acceptDSGVO: boolean = false;
     private _imagesLength: number = 0;
     private _orderCreated: boolean = false;
     private _showErrDlg: boolean = false;

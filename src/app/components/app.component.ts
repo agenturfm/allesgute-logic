@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, isDevMode } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -8,8 +8,10 @@ import { environment } from '../../environments/environment';
 export class AppComponent implements OnInit {
 
     @Output('startConfig') private _startConfig: EventEmitter<boolean> = new EventEmitter<boolean>();
+    private _activeCategory: number = 0;
 
     public appVersion: string = environment.appVersion;
+    public isDevMode: boolean = isDevMode();
 
     public isLoading: boolean = true;
     public headerImgPath: string = 'assets/images/web/';
@@ -43,8 +45,6 @@ export class AppComponent implements OnInit {
             'christmas/Canvas/jonathan-borba-P3Tc5ZxHowk-unsplash.jpg', 'christmas/Canvas/valentin-petkov-SJ9LXHONNv4-unsplash.jpg', 'christmas/Canvas/roberto-nickson-u6fDUe2x11g-unsplash.jpg',
             'christmas/Canvas/kate-hliznitsova-GWrjiKCiKw8-unsplash.jpg']
     ];
-
-    private _activeCategory: number = 0;
 
     public ngOnInit () : void {
         this.doImgTransform(0);
