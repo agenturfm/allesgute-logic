@@ -63,7 +63,7 @@ export class MosaicDesign extends Design {
 
         const newTiles: TileQuadrant = this.createTiles(
             parentTile.x, parentTile.y, parentTile.w, parentTile.h,
-            ( nrTiles > 4 ? 4 : nrTiles ) as 1 | 2 | 3 | 4
+            ( nrTiles > 4 ? 4 : nrTiles ) as 1 | 2 | 3 | 4, totalTiles == 4
         );
 
         if ( nrTiles <= 4 ) {
@@ -141,21 +141,21 @@ export class MosaicDesign extends Design {
     private createTiles (
         offsetX: number = 0, offsetY: number = 0,
         width: number = this.dimensions.x, height: number = this.dimensions.y,
-        count: 1 | 2 | 3 | 4 = 4
+        count: 1 | 2 | 3 | 4 = 4, isOnlyFour: boolean = false
     ): TileQuadrant|undefined {
 
         const randDecision: number = Math.random();
 
         // Restrict min/max to tighter boundaries (48% - 52%)
         //
-        const horizontal: number = ( Math.random() * 4 ) + 48;
-        const vertical: number = ( Math.random() * 4 ) + 48;
+        const horizontal: number = ( Math.random() * 8 ) + 44;
+        const vertical: number = ( Math.random() * 8 ) + 44;
 
-        const left: number = width * ( horizontal / 100 );
-        const top: number = height * ( vertical / 100 );
+        let left: number = width * ( horizontal / 100 );
+        let top: number = height * ( vertical / 100 );
 
-        const right: number = width - left;
-        const bottom: number = height - top;
+        let right: number = width - left;
+        let bottom: number = height - top;
 
         if ( count === 4 ) {
 
@@ -165,6 +165,16 @@ export class MosaicDesign extends Design {
              * |  c  |   d  |
              * |------------|
              */
+
+            // Restrict to 50-50
+            // As per email 15.11.2021
+            //
+            if ( isOnlyFour ) {
+                left =  width / 2;
+                top =  height / 2;
+                right = width - left;
+                bottom =  height - top;
+            }
 
             return {
                 a: { x: offsetX, y: offsetY, w: left, h: top },
