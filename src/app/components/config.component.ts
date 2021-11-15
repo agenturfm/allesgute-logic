@@ -26,6 +26,7 @@ const CanvasPrices: Map<CanvasSize, string[]> = new Map<CanvasSize, string[]>( [
 interface PrevUIImg {
     id: string;
     dataURL: string;
+    rotation: number;
 }
 
 @Component({
@@ -116,7 +117,7 @@ export class ConfigComponent implements AfterViewInit {
         if ( this._images.length != this._imagesService.images.length ) {
             // Make a copy of UI images, so when shuffling the previews do not shuffle as well
             this._images = [];
-            this._imagesService.images.forEach( i => this._images.push( { dataURL: i.dataURL, id: i.id } ) );
+            this._imagesService.images.forEach( i => this._images.push( { dataURL: i.dataURL, id: i.id, rotation: i.getRotationDegree() } ) );
             this.imagesLength.emit(this._images.length);
         }
         return this._images;

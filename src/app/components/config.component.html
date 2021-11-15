@@ -35,8 +35,10 @@
                 </div>
                 <div class="photo-previews-list">
                     <div *ngFor="let image of images" class="photo-item">
-                        <div class="photo" [style.background-image]="'url(\''+image.dataURL+'\')'">
-                            <div class="remove-photo" (click)="removeImage(image.id)"><i class="icon icon-remove"></i></div>
+                        <div class="photo" [style.background-image]="'url(\''+image.dataURL+'\')'" [style.transform]="'rotate('+image.rotation+'deg)'">
+                            <div class="remove-photo" [style.transform]="'rotate(-'+image.rotation+'deg)'" (click)="removeImage(image.id)">
+                                <span class="remove-photo-span"><i class="icon icon-remove"></i></span>
+                            </div>
                         </div>
                     </div>
                     <div *ngIf="uploadBtnVisible" class="add-photo-btn" (click)="addImage()">
