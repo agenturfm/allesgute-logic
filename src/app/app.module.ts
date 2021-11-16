@@ -36,7 +36,6 @@ import { HttpClientModule } from '@angular/common/http';
     providers: [
         { provide: 'uiImageWidth', useValue: 800 },
         { provide: 'uiImageQuality', useValue: 0.7 },
-        { provide: 'PAYPAL_CLIENT_ID', useValue: 'test' },
         ImagesService,
         MessageDialog,
         MessageService,

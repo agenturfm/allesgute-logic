@@ -5,10 +5,11 @@
 export const environment = {
     production: false,
     appVersion: require('../../package.json').version + '-dev',
-    PAYPAL_CLIENT_ID: 'AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX',         // Sandbox
+    // Sandbox KW
+    PAYPAL_CLIENT_ID: 'AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX',
     PAYPAL_CURRENCY: 'EUR',
-    // Suffixed by size '<n>x<n>', e.g. '40x40'
-    PAYPAL_ITEM_NAME: 'Fotokanvas',
+    // Suffixed by size ' <n>x<n>', e.g. '40x40'
+    PAYPAL_ITEM_NAME: 'Fotoleinwand AllesGute.info',
     // Prices for different canvas sizes
     // First price is 'statt', 2nd is real price sent to paypal
     CANVAS_PRICES: {
@@ -17,8 +18,7 @@ export const environment = {
         lg: [ '84,90', '69,90' ]
     },
     // No tailing "/" allowed!!
-    backendAPI: 'http://localhost:3000',
-    shopBaseURL: 'https://shop.printyomo.com'
+    backendAPI: 'http://localhost:3000'
 };
 
 /*

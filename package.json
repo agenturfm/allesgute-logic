@@ -5,12 +5,15 @@
         "ng": "ng",
         "start": "run-p build-dev-worker int:serve",
         "start-prod": "run-p build-prod-worker int:serve-prod",
-        "build": "ng build --configuration development",
-        "build-prod": "ng build --configuration production",
+        "build": "run-s dist-clean && run-p build-dev-worker ng:build-dev",
+        "build-prod": "run-s dist-clean build-prod-worker ng:build-prod",
         "build-prod-worker": "ng run allesgute:build-worker",
         "build-dev-worker": "ng run allesgute:dev-worker",
         "int:serve": "ng serve -c development",
-        "int:serve-prod": "ng serve -c production"
+        "int:serve-prod": "ng serve -c production",
+        "ng:build-dev": "ng build --configuration development",
+        "ng:build-prod": "ng build --configuration production",
+        "dist-clean": "rimraf dist"
     },
     "private": true,
     "dependencies": {
@@ -49,6 +52,7 @@
         "gulp-rename": "^2.0.0",
         "gulp-clean-css": "^4.3.0",
         "npm-run-all": "~4.1.5",
+        "rimraf": "^3.0.2",
         "typescript": "~4.3.5",
         "wait-on": "~6.0.0",
         "webpack": "~5.61.0",
