@@ -14,5 +14,5 @@ export const environment = {
         lg: [ '84,90', '69,90' ]
     },
     // No tailing "/" allowed!!
-    backendAPI: 'https://api.somewhere.com'
+    backendAPI: 'https://leinwand.allesgute.info'
 };

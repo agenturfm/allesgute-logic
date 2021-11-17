@@ -149,8 +149,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
                                 .catch( err => {
                                     this._msgSvc.openDialog([
                                         { text: 'Fehler beim Upload der Bilddaten - bitte versuche es nochmals!' },
-                                        { text: 'Es wurde noch keine Zahlung durchgeführt!', style: 'font-weight: bold' } ],
-                                        `Fehler ${err}`);
+                                        { text: 'Es wurde noch keine Zahlung durchgeführt!', style: 'font-weight: bold' } ]);
 
                                     this._checkoutSvc.cancelOrder().subscribe( {
                                         error: err1 => {
