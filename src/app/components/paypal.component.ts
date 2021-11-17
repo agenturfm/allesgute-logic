@@ -40,9 +40,34 @@ export class PaypalMetaInfo {
     delivery: PaypalDeliveryInfo = new PaypalDeliveryInfo();
 }
 
-interface PaypalPurchaseUnitAmount {
+interface PaypalAmount {
     currency_code: string;
     value: string;
+}
+
+// https://developer.paypal.com/docs/api/orders/v2/#orders-capture-response
+interface PaypalPurchaseUnitCapture {
+    "id" : string;
+    "status" : string;
+    "amount" : PaypalAmount;
+    "seller_protection" : {
+        "status" :  string;
+        "dispute_categories" : string[];
+    };
+    "final_capture" : boolean
+    "disbursement_mode" :  string;
+    "seller_receivable_breakdown" : {
+        "gross_amount" : PaypalAmount;
+        "paypal_fee" : PaypalAmount;
+        "net_amount" : PaypalAmount;
+    };
+    "create_time" :  string;
+    "update_time" : string;
+    "links" : [ {
+        "href" : string;
+        "rel" : string;
+        "method" : string;
+    }];
 }
 
 @Component({
@@ -61,8 +86,6 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
     private _imagesLength: number = 0;
     private _orderCreated: boolean = false;
     private _showErrDlg: boolean = false;
-
-    // SB business account token: AXUHq7-v7CqikhcgViD35Xw8xlDxbHX_abqEBalAJidRg6Izi-kd4g6-jEmhKEOlGHVK1kZ8bsUjntvX
 
     private readonly _paypalClientId: string = environment.PAYPAL_CLIENT_ID;
     private readonly _paypalCurrency: string = environment.PAYPAL_CURRENCY || 'EUR';
@@ -320,13 +343,16 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         d.payer.email = details.payer.email_address || '<undefined>';
         d.payer.countryCode = details.payer.address.country_code || '<undefined>';
 
-        // There shall only be exactly one item present!
+        // There shall only be exactly one PU present!
         const u = details.purchase_units[0];
-        d.delivery.itemPaymentId = <string> u.payments.captures[0].id || '<undefined>';
+        // There shall only be exactly one capture present!
+        const c = <PaypalPurchaseUnitCapture> <unknown> u.payments.captures[0];
+
+        d.delivery.itemPaymentId = <string> c.id || '<undefined>';
         d.delivery.itemDescription = u.description || '<undefined>';
         d.delivery.itemAmount = '1';
-        d.delivery.itemCurrency = (<PaypalPurchaseUnitAmount> u.payments.captures[0].amount).currency_code || '<undefined>';
-        d.delivery.itemValue = (<PaypalPurchaseUnitAmount> u.payments.captures[0].amount).value || '<undefined>';
+        d.delivery.itemCurrency = (<PaypalAmount> c.amount).currency_code || '<undefined>';
+        d.delivery.itemValue = (<PaypalAmount> c.amount).value || '<undefined>';
 
         d.delivery.fullName = u.shipping.name.full_name || '<undefined>';
         d.delivery.addressLine1 = u.shipping.address.address_line_1 || '<undefined>';
