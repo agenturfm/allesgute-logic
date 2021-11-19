@@ -1,5 +1,10 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
+import { RouterModule, Routes } from '@angular/router';
 
 import { AppComponent } from './components/app.component';
 import { ConfigComponent } from './components/config.component';
@@ -7,21 +12,19 @@ import { RootComponent } from './components/root.component';
 import { HeaderComponent } from './components/header.component';
 import { MosaicDirective } from './directives/mosaic.directive';
 import { ImagesService } from './services/images.service';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MessageDialog } from './components/message.dialog';
-import { MatButtonModule } from '@angular/material/button';
 import { MessageService } from './services/message.service';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PaypalComponent } from './components/paypal.component';
 import { CheckoutService } from './services/checkout.service';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterModule, Routes } from '@angular/router';
+import { DispatchComponent } from './components/dispatch.component';
 
 const routes: Routes = [
-    {
-        path: '**',
-        component: RootComponent
-    }
+    { path: 'hochzeit', component: RootComponent },
+    { path: 'geburtstag', component: RootComponent },
+    { path: 'kommunion', component: RootComponent },
+    { path: 'weihnachten', component: RootComponent },
+    { path: 'geburt', component: RootComponent },
+    { path: '**', component: RootComponent }
 ];
 
 @NgModule({
@@ -32,7 +35,8 @@ const routes: Routes = [
         HeaderComponent,
         MosaicDirective,
         MessageDialog,
-        PaypalComponent
+        PaypalComponent,
+        DispatchComponent
     ],
     imports: [
         BrowserModule,
@@ -50,6 +54,6 @@ const routes: Routes = [
         MessageService,
         CheckoutService,
     ],
-    bootstrap: [RootComponent]
+    bootstrap: [DispatchComponent]
 })
 export class AppModule { }
