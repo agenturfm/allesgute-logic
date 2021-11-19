@@ -15,6 +15,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PaypalComponent } from './components/paypal.component';
 import { CheckoutService } from './services/checkout.service';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [
+    {
+        path: '**',
+        component: RootComponent
+    }
+];
 
 @NgModule({
     declarations: [
@@ -31,7 +39,8 @@ import { HttpClientModule } from '@angular/common/http';
         MatDialogModule,
         MatButtonModule,
         BrowserAnimationsModule,
-        HttpClientModule
+        HttpClientModule,
+        RouterModule.forRoot(routes)
     ],
     providers: [
         { provide: 'uiImageWidth', useValue: 800 },

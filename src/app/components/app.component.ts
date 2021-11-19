@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, isDevMode } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, isDevMode, Input } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
     ];
 
     public ngOnInit () : void {
-        this.doImgTransform(0);
+        // this.doImgTransform(0);
     }
 
     public startConfig() {
@@ -58,9 +58,18 @@ export class AppComponent implements OnInit {
         return this._activeCategory;
     }
 
+    @Input('section')
+    public set activeCategoryRoute ( value : number ) {
+        this.isLoading = true;
+        this._activeCategory = value;
+        setTimeout( () => {
+            this.isLoading = false;
+        }, 1000 );
+
+    }
     public set activeCategory ( value : number ) {
 
-        if (this._activeCategory !== value ) {
+        if (this._activeCategory !== value) {
             this.doImgTransform(value);
         }
     }

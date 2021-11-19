@@ -26,6 +26,7 @@
         "@angular/material": "~12.2.12",
         "@angular/platform-browser": "~12.2.12",
         "@angular/platform-browser-dynamic": "~12.2.12",
+        "@angular/router": "~12.2.12",
         "@angular/service-worker": "~12.2.12",
         "@paypal/paypal-js": "~4.1.0",
         "konva": "~8.2.3",
@@ -36,6 +37,7 @@
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "~12.2.12",
+        "@angular-devkit/build-webpack": "~0.1300.3",
         "@angular/cli": "~12.2.12",
         "@angular/compiler-cli": "~12.2.12",
         "@ngtools/webpack": "~12.2.12",
