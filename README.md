@@ -10,7 +10,7 @@ Run `npm run-script start` for a dev server. Navigate to `http://localhost:4200/
 
 Run `npm run-script build-prod` to build the project in production mode. The build artifacts will be stored in the `dist/` directory.
 
-#Installation
+## Installation
 * `npm install --production`
 * Review configuration in `src/environments/environment.prod.ts`
 * Build productive version: `npm run-script build-prod`
