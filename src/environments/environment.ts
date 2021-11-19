@@ -18,6 +18,8 @@ export const environment = {
         lg: [ '84,90', '69,90' ]
     },
     // No tailing "/" allowed!!
+    // backendAPI: 'https://3.64.32.251/api'
+    // backendAPI: 'https://leinwand.allesgute.info/api'
     backendAPI: 'http://localhost:3000'
 };
 
