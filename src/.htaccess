@@ -1,0 +1,12 @@
+# Required for apache2 to allow URI sub-dirs to be passed on to Angular router module
+# instead of reporting 404
+#
+<IfModule mod_rewrite.c>
+  Options Indexes FollowSymLinks
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . index.html [L]
+</IfModule>
