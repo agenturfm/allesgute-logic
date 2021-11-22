@@ -27,7 +27,7 @@
         </div>
     </div>
     <div class="section-rt">
-        <div class="payment-section">
+        <div class="payment-section" [style.display]="isConfigVisible ? '' : 'none'">
             <div class="section-block">
                 <div class="section-title-wrapper">
                     <h2 class="section-title">Deine Fotos</h2>
@@ -88,8 +88,8 @@
                     inkl. Versand (ca. 6-8 Werktage)
                 </div>
             </div>
-            <app-paypal [images]="imagesLength"></app-paypal>
         </div>
+        <app-paypal (checkoutDone)="isConfigVisible=$event.valueOf()" [images]="imagesLength"></app-paypal>
     </div>
 </div>
 <!--End of UPLOAD SECTION-->

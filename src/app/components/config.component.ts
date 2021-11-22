@@ -6,7 +6,7 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, isDevMode, Renderer
 import { RendererService } from '../services/renderer.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService, UIImage } from '../services/images.service';
+import { IMAGES_SERVICE_IMAGES_MINIMUM, ImagesService } from '../services/images.service';
 import { MessageService } from '../services/message.service';
 import { CheckoutService } from '../services/checkout.service';
 import { environment } from '../../environments/environment';
@@ -36,6 +36,7 @@ interface PrevUIImg {
 export class ConfigComponent implements AfterViewInit {
 
     public tooltip: boolean = false;
+    public isConfigVisible: boolean = true;
     public canvasSizesEnum: number[] = [CanvasSize.sm, CanvasSize.md, CanvasSize.lg];
     public imagesLength: EventEmitter<number> = new EventEmitter<number>();
 

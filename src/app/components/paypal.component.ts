@@ -77,6 +77,7 @@ interface PaypalPurchaseUnitCapture {
 export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     @Input('images') public images: EventEmitter<number>;
+    @Output() public checkoutDone: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     private _isError: boolean = false;
     private _isSuccess: boolean = false;
@@ -286,6 +287,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         if ( value ) {
             this._isError = false;
         }
+        this.setCheckoutDone();
     }
 
     public get isError () : boolean {
@@ -297,6 +299,7 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         if ( value ) {
             this._isSuccess = false;
         }
+        this.setCheckoutDone();
     }
 
     public get acceptDSGVO () : boolean {
@@ -327,6 +330,10 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
             }
         }
         return result;
+    }
+
+    private setCheckoutDone () {
+        this.checkoutDone.emit(!(this._isSuccess || this._isError));
     }
 
     private updateOrderDetails ( details: OrderResponseBody ) {
