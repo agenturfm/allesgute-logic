@@ -2,12 +2,12 @@
 <app-header (activeCategory)="activeCategory=$event"></app-header>
 
 <!--HERO SECTION-->
-<div class="hero-section color-white" [class]="headerImgs[activeCategory][0]">
+<div class="hero-section color-white" [class]="headerImgs[activeCategory].type">
     <div class="loading-bar" [class.loading]="isLoading" [style]="isLoading ? 'width: 80%' : ''"></div>
     <div class="container">
         <div class="row justify-content-between">
-            <div class="col-lg-6">
-                <h1>Glückwünsche<br>für DEIN zuhause.</h1>
+            <div class="col-lg-6" [style.color]="headerImgs[activeCategory].textColor">
+                <h1>Individuelle Fotoleinwand gestalten</h1>
                 <p class="desc">Lade jetzt <b>bis zu 32 Bilder</b> hoch und verschenke eine Fotoleinwand in Kunstdruckqualität.</p>
                 <div class="desktop-btn" (click)="startConfig()">
                     <a class="btn has-icon cta-btn">
@@ -15,7 +15,7 @@
                             <span>Jetzt Bilder hochladen</span><i class="icon icon-check-shield-white"></i>
                         </div>
                     </a>
-                    <p class="msg"><b>Optimaler Datenschutz.</b> Deine Fotos sind sicher bei uns.</p>
+                    <p class="msg" [style.color]="headerImgs[activeCategory].textColor"><b>Optimaler Datenschutz.</b> Deine Fotos sind sicher bei uns.</p>
                 </div>
             </div>
             <div class="col-lg-5">
@@ -24,34 +24,34 @@
                         <div class="spinner" [class.loading]="isLoading"> </div>
                         <div class="row-1">
                             <div class="box-1">
-                                <div class="img img-1" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][1]+'\')'"></div>
+                                <div class="img img-1" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[0]+'\')'"></div>
                             </div>
                             <div class="box-2">
-                                <div class="img img-2" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][2]+'\')'"></div>
+                                <div class="img img-2" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[1]+'\')'"></div>
                             </div>
                             <div class="box-3">
-                                <div class="img img-3" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][3]+'\')'"></div>
+                                <div class="img img-3" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[2]+'\')'"></div>
                             </div>
                         </div>
                         <div class="row-2">
                             <div class="box-1">
                                 <div class="row-1">
                                     <div class="box-1" >
-                                        <div class="img img-4" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][4]+'\')'"></div>
+                                        <div class="img img-4" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[3]+'\')'"></div>
                                     </div>
                                     <div class="box-2">
-                                        <div class="img img-5" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][5]+'\')'"></div>
+                                        <div class="img img-5" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[4]+'\')'"></div>
                                     </div>
                                 </div>
                                 <div class="row-2">
                                     <div class="box-1">
-                                        <div class="img img-6" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][6]+'\')'"></div>
+                                        <div class="img img-6" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[5]+'\')'"></div>
                                     </div>
                                 </div>
                             </div>
                             <div class="box-2">
                                 <div class="box-1">
-                                    <div class="img img-7" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory][7]+'\')'"></div>
+                                    <div class="img img-7" [style.background-image]="'url(\''+headerImgPath+headerImgs[activeCategory].tiles[6]+'\')'"></div>
                                 </div>
                             </div>
                         </div>

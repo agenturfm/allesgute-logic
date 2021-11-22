@@ -1,6 +1,6 @@
 {
     "name": "allesgute",
-    "version": "0.5.0",
+    "version": "1.0.0",
     "scripts": {
         "ng": "ng",
         "start": "run-p build-dev-worker int:serve",
