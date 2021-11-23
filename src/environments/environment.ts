@@ -10,6 +10,8 @@ export const environment = {
     PAYPAL_CURRENCY: 'EUR',
     // Suffixed by size ' <n>x<n>', e.g. '40x40'
     PAYPAL_ITEM_NAME: 'Fotoleinwand',
+    // Google Tag Manager ID
+    GTM_ID: 'UA-188334684-1',
     // Prices for different canvas sizes
     // First price is 'statt', 2nd is real price sent to paypal
     CANVAS_PRICES: {

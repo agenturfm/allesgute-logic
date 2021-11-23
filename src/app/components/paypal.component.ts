@@ -5,6 +5,7 @@ import { MessageService, MessageText } from '../services/message.service';
 import { of, Subscription } from 'rxjs';
 import { CheckoutService } from '../services/checkout.service';
 import { OrderResponseBody } from '@paypal/paypal-js/types/apis/orders';
+import { CanvasOrderItemIDs } from './config.component';
 
 //
 // IMPORTANT!
@@ -366,6 +367,28 @@ export class PaypalComponent implements OnInit, OnDestroy, AfterViewChecked {
         d.delivery.city = u.shipping.address.admin_area_1 || u.shipping.address.admin_area_2 || '<undefined>';
         d.delivery.countryCode = u.shipping.address.country_code || '<undefined>';
         d.delivery.zipCode = u.shipping.address.postal_code || '<undefined>';
+
+        // Update Google Analytics w/ purchase
+        // Note: gtag() has to be defined in index.html!
+        (<any>window).gtag('event', 'purchase', {
+            "transaction_id": this._checkoutSvc.orderId,
+            "affiliation": "allesgute.info",
+            "value": d.delivery.itemValue,
+            "currency": d.delivery.itemCurrency,
+            "tax": Number(d.delivery.itemValue)*0.17,
+            "shipping": 0,
+            "items": [
+                {
+                    "id": CanvasOrderItemIDs.get(this._checkoutSvc.size),
+                    "name": d.delivery.itemDescription,
+                    "category": "Fotoleinwand",
+                    "variant": `${this._checkoutSvc.size}x${this._checkoutSvc.size}`,
+                    "list_position": 1,
+                    "quantity": 1,
+                    "price": d.delivery.itemValue
+                }
+            ]
+        });
 
         return this._checkoutSvc.updateOrder( d );
     }

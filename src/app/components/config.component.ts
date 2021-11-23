@@ -23,6 +23,12 @@ const CanvasPrices: Map<CanvasSize, string[]> = new Map<CanvasSize, string[]>( [
     [ CanvasSize.lg, [ '84,90', '69,90' ]]
 ])
 
+export const CanvasOrderItemIDs: Map<CanvasSize, string> = new Map<CanvasSize, string>( [
+    [ CanvasSize.sm, 'FL01' ],
+    [ CanvasSize.md, 'FL02' ],
+    [ CanvasSize.lg, 'FL03' ]
+])
+
 interface PrevUIImg {
     id: string;
     dataURL: string;
