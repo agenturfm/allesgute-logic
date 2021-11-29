@@ -1096,6 +1096,9 @@ $easeInOutCubic : cubic-bezier(0.65, 0, 0.35, 1);
 	position: absolute;
 	left: -1000px;
 	bottom: -1000px;
+    // Limit size of viewBox container to prevent button click issue in Firefox
+    width: 50px;
+    height: 50px;
 }
 
 .comments-list {
