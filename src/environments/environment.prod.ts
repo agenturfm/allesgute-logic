@@ -11,9 +11,9 @@ export const environment = {
     // Prices for different canvas sizes
     // First price is 'statt', 2nd is real price sent to paypal
     CANVAS_PRICES: {
-        sm: [ '54,90', '39,90' ],
-        md: [ '74,90', '59,90' ],
-        lg: [ '84,90', '69,90' ]
+        sm: [ '54,90', '24,90' ],
+        md: [ '74,90', '39,90' ],
+        lg: [ '84,90', '49,90' ]
     },
     // No tailing "/" allowed!!
     backendAPI: 'https://leinwand.allesgute.info/api'
