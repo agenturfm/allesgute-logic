@@ -9,7 +9,8 @@ App landing page designs (Hochzeit, Geburtstag, ...) can be pre-selected by eith
 * `leinwand.allesgute.info?t=geburtstag` or
 * `leinwand.allesgute.info/geburtstag`
 
-Supported tags: `geburt`, `geburtstag`, `kommunion`, `hochzeit`, `weihnachten` 
+Supported **tags**: `geburt`, `geburtstag`, `kommunion`, `hochzeit`, `weihnachten`
+Supported **virtual directories**: same as above tags, in addition: `c`, which directly starts the configurator.
 
 ## Development server
 

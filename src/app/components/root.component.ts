@@ -41,6 +41,9 @@ export class RootComponent {
                 this.activeCat = 3; break;
             case 'weihnachten':
                 this.activeCat = 4; break;
+            case 'c':
+                // Directly start configurator
+                this.configActive = true; break;
             default:
                 this.activeCat = 0; break;
         }
